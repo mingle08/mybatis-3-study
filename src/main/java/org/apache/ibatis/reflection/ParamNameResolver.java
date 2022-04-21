@@ -74,7 +74,15 @@ public class ParamNameResolver {
       // 参数名称
       String name = null;
       for (Annotation annotation : paramAnnotations[paramIndex]) {
-        // 找出参数的注解
+        /*
+        解析注解
+        判断是不是某种注解，有2种方式：
+        1，instanceof 注解名
+            比如此类中的instanceof Param
+        2，Class类中的一些方法，参数为：注解名.class
+            isAnnotationPresent(Param.class)
+            getAnnotation(Param.class)
+         */
         if (annotation instanceof Param) {
           // 如果注解是Param
           hasParamAnnotation = true;
