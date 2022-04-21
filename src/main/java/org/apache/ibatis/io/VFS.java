@@ -59,6 +59,10 @@ public abstract class VFS {
 
       VFS vfs = null;
       // 依次生成实例，找出第一个可用的
+      /*
+       为什么for中拿到第一个vfs之后没有return？ 因为for要进行下一次循环的条件是vfs == null || !vfs.isValid()
+       所以第一个vfs如果不为null，for循环就会中断跳出
+       */
       for (int i = 0; vfs == null || !vfs.isValid(); i++) {
         Class<? extends VFS> impl = impls.get(i);
         try {
