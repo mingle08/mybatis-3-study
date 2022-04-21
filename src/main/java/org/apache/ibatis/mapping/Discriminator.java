@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2015 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -22,10 +22,40 @@ import org.apache.ibatis.session.Configuration;
 
 /**
  * @author Clinton Begin
+ * 属于ResultMap，是ResultMap附属的鉴别器
+ * 类似于一个switch语句吧
+ *
  */
+
+/*
+
+鉴别器：mybatis可以使用discriminator判断某列的值，然后根据某列的值改变封装行为。
+
+
+<resultMap id="userMap" type="User" autoMapping="false">
+    <id property="id" column="id" javaType="Integer"  jdbcType="INTEGER"  typeHandler="org.apache.ibatis.type.IntegerTypeHandler"/>
+    <result property="name" column="name"/>
+    <discriminator javaType="int" column="sex">
+        <case value="0" resultMap="boyUserMap"/>
+        <case value="1" resultMap="girlUserMap"/>
+    </discriminator>
+</resultMap>
+
+<resultMap id="girlUserMap" type="Girl" extends="userMap">
+    <result property="email" column="email"/>
+</resultMap>
+
+<resultMap id="boyUserMap" type="Boy" extends="userMap">
+    <result property="age" column="age"/>
+</resultMap>
+*/
+
 public class Discriminator {
 
+  // 存储条件判断行的信息，如<discriminator javaType="int" column="sex">中的信息
   private ResultMapping resultMapping;
+
+  // 存储选择项的信息，键为value值，值为resultMap值。如<case value="0" resultMap="boyUserMap"/>中的信息
   private Map<String, String> discriminatorMap;
 
   Discriminator() {

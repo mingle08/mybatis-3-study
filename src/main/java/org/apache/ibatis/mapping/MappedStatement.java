@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -30,25 +30,47 @@ import org.apache.ibatis.session.Configuration;
 
 /**
  * @author Clinton Begin
+ * 映射的语句
+ *
+ *
+ * 该对象完整的表述出一个下面节点的信息
+ *
+ *      <insert id="addUser" parameterType="User">
+ *         INSERT INTO `user`
+ *         (`name`,`email`,`age`,`sex`,`schoolName`)
+ *         VALUES
+ *         (#{name},#{email},#{age},#{sex},#{schoolName})
+ *     </insert>
+ *
+ *   但是这里面的
  */
 public final class MappedStatement {
-
+  // Mapper文件的磁盘路径
   private String resource;
+  // Configuration对象
   private Configuration configuration;
+  // 查询语句的完整包名加方法名，例如：com.github.yeecode.mybatisdemo.dao.UserMapper.addUser
   private String id;
   private Integer fetchSize;
   private Integer timeout;
   private StatementType statementType;
   private ResultSetType resultSetType;
+  //SQL源码，对应于我们所写在配置文件中的SQL语句。包含占位符，无法直接执行。可以展开分析就是分行的sql语句text。
   private SqlSource sqlSource;
   private Cache cache;
+  // 参数们
   private ParameterMap parameterMap;
+  // 输出的resultMap放在这里，我们在设置resultMap="UserBean" 时可以设置多个，即resultMap="UserBean，RoleBean"。
+  // 因此这里是一个list
   private List<ResultMap> resultMaps;
+  // 执行该语句前是否清除一二级缓存
   private boolean flushCacheRequired;
   private boolean useCache;
   private boolean resultOrdered;
+  // 类型，增删改查
   private SqlCommandType sqlCommandType;
   private KeyGenerator keyGenerator;
+  // 存储了主键的属性名
   private String[] keyProperties;
   private String[] keyColumns;
   private boolean hasNestedResultMaps;
@@ -73,6 +95,7 @@ public final class MappedStatement {
       mappedStatement.parameterMap = new ParameterMap.Builder(configuration, "defaultParameterMap", null, new ArrayList<>()).build();
       mappedStatement.resultMaps = new ArrayList<>();
       mappedStatement.sqlCommandType = sqlCommandType;
+      // 全局启用主键生成且是插入语句，则设置主键生成器
       mappedStatement.keyGenerator = configuration.isUseGeneratedKeys() && SqlCommandType.INSERT.equals(sqlCommandType) ? Jdbc3KeyGenerator.INSTANCE : NoKeyGenerator.INSTANCE;
       String logId = id;
       if (configuration.getLogPrefix() != null) {
@@ -175,11 +198,6 @@ public final class MappedStatement {
     }
 
     /**
-     * Resul sets.
-     *
-     * @param resultSet
-     *          the result set
-     * @return the builder
      * @deprecated Use {@link #resultSets}
      */
     @Deprecated
@@ -291,9 +309,6 @@ public final class MappedStatement {
   }
 
   /**
-   * Gets the resul sets.
-   *
-   * @return the resul sets
    * @deprecated Use {@link #getResultSets()}
    */
   @Deprecated

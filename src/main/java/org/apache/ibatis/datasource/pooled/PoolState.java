@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -21,19 +21,30 @@ import java.util.List;
 /**
  * @author Clinton Begin
  */
+// 存储了所有的连接
 public class PoolState {
 
+  // 池化数据源
   protected PooledDataSource dataSource;
-
+  // 空闲的连接
   protected final List<PooledConnection> idleConnections = new ArrayList<>();
+  // 活动的连接
   protected final List<PooledConnection> activeConnections = new ArrayList<>();
+  // 连接被取出的次数
   protected long requestCount = 0;
+  // 取出请求花费时间的累计值。从准备取出请求到取出结束的时间为取出请求花费的时间
   protected long accumulatedRequestTime = 0;
+  // 累积被检出的时间
   protected long accumulatedCheckoutTime = 0;
+  // 声明的过期连接数
   protected long claimedOverdueConnectionCount = 0;
+  // 过期的连接数的总检出时长
   protected long accumulatedCheckoutTimeOfOverdueConnections = 0;
+  // 总等待时间
   protected long accumulatedWaitTime = 0;
+  // 等待的轮次
   protected long hadToWaitCount = 0;
+  // 坏连接的数目
   protected long badConnectionCount = 0;
 
   public PoolState(PooledDataSource dataSource) {
@@ -73,6 +84,7 @@ public class PoolState {
     return requestCount == 0 ? 0 : accumulatedCheckoutTime / requestCount;
   }
 
+
   public synchronized int getIdleConnectionCount() {
     return idleConnections.size();
   }
@@ -84,7 +96,7 @@ public class PoolState {
   @Override
   public synchronized String toString() {
     StringBuilder builder = new StringBuilder();
-    builder.append("\n===CONFIGURATION==============================================");
+    builder.append("\n===CONFINGURATION==============================================");
     builder.append("\n jdbcDriver                     ").append(dataSource.getDriver());
     builder.append("\n jdbcUrl                        ").append(dataSource.getUrl());
     builder.append("\n jdbcUsername                   ").append(dataSource.getUsername());

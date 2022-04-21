@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -31,11 +31,15 @@ import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
  * @author Clinton Begin
  */
 public class MetaObject {
-
+  // 原始对象
   private final Object originalObject;
+  // 对象包装器
   private final ObjectWrapper objectWrapper;
+  // 对象工厂
   private final ObjectFactory objectFactory;
+  // 对象包装器工厂
   private final ObjectWrapperFactory objectWrapperFactory;
+  // 反射工厂
   private final ReflectorFactory reflectorFactory;
 
   private MetaObject(Object object, ObjectFactory objectFactory, ObjectWrapperFactory objectWrapperFactory, ReflectorFactory reflectorFactory) {
@@ -111,11 +115,13 @@ public class MetaObject {
 
   public Object getValue(String name) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
+    // 如果还有下层属性
     if (prop.hasNext()) {
       MetaObject metaValue = metaObjectForProperty(prop.getIndexedName());
       if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
         return null;
       } else {
+        // 循环解析
         return metaValue.getValue(prop.getChildren());
       }
     } else {

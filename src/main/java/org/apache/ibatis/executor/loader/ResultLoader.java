@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -67,17 +67,22 @@ public class ResultLoader {
   }
 
   public Object loadResult() throws SQLException {
+    // 查询结果列表
     List<Object> list = selectList();
+    // 把结果列表转化为指定对象
     resultObject = resultExtractor.extractObjectFromList(list, targetType);
     return resultObject;
   }
 
   private <E> List<E> selectList() throws SQLException {
+    // 初始化ResultLoader时传入的执行器
     Executor localExecutor = executor;
     if (Thread.currentThread().getId() != this.creatorThreadId || localExecutor.isClosed()) {
+      // 执行器关闭，或者执行器属于其他线程，则创建新的执行器
       localExecutor = newExecutor();
     }
     try {
+      // 查询结果
       return localExecutor.query(mappedStatement, parameterObject, RowBounds.DEFAULT, Executor.NO_RESULT_HANDLER, cacheKey, boundSql);
     } finally {
       if (localExecutor != executor) {
@@ -86,6 +91,7 @@ public class ResultLoader {
     }
   }
 
+  // 这才是创建一个真的执行器，而ClosedExecutor是假的执行器
   private Executor newExecutor() {
     final Environment environment = configuration.getEnvironment();
     if (environment == null) {

@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -46,43 +46,66 @@ import org.apache.ibatis.session.SqlSession;
  */
 public class MapperMethod {
 
+  // 记录了sql的名称和类型
   private final SqlCommand command;
+  // 对应的方法签名
   private final MethodSignature method;
 
+  // 参数： 方法所在的接口、方法、Configuration
+
+  /**
+   * MapperMethod的构造方法
+   * @param mapperInterface 映射接口
+   * @param method 映射接口中的具体方法
+   * @param config 配置信息Configuration
+   */
   public MapperMethod(Class<?> mapperInterface, Method method, Configuration config) {
     this.command = new SqlCommand(config, mapperInterface, method);
     this.method = new MethodSignature(config, mapperInterface, method);
   }
 
+  /**
+   * 执行映射接口中的方法
+   * @param sqlSession sqlSession接口的实例，通过它可以进行数据库的操作
+   * @param args 执行接口方法时传入的参数
+   * @return 数据库操作结果
+   */
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
-    switch (command.getType()) {
-      case INSERT: {
+    switch (command.getType()) { // 根据SQL语句类型，执行不同操作
+      case INSERT: { // 如果是插入语句
+        // 将参数顺序与实参对应好
         Object param = method.convertArgsToSqlCommandParam(args);
+        // 执行操作并返回结果
         result = rowCountResult(sqlSession.insert(command.getName(), param));
         break;
       }
-      case UPDATE: {
+      case UPDATE: { // 如果是更新语句
+        // 将参数顺序与实参对应好
         Object param = method.convertArgsToSqlCommandParam(args);
+        // 执行操作并返回结果
         result = rowCountResult(sqlSession.update(command.getName(), param));
         break;
       }
-      case DELETE: {
+      case DELETE: { // 如果是删除语句MappedStatement
+        // 将参数顺序与实参对应好
         Object param = method.convertArgsToSqlCommandParam(args);
+        // 执行操作并返回结果
         result = rowCountResult(sqlSession.delete(command.getName(), param));
         break;
       }
-      case SELECT:
-        if (method.returnsVoid() && method.hasResultHandler()) {
+      case SELECT: // 如果是查询语句
+        if (method.returnsVoid() && method.hasResultHandler()) { // 方法返回值为void，且有结果处理器
+          // 使用结果处理器执行查询
           executeWithResultHandler(sqlSession, args);
           result = null;
-        } else if (method.returnsMany()) {
+        } else if (method.returnsMany()) { // 多条结果查询
           result = executeForMany(sqlSession, args);
-        } else if (method.returnsMap()) {
+        } else if (method.returnsMap()) { // Map结果查询
           result = executeForMap(sqlSession, args);
-        } else if (method.returnsCursor()) {
+        } else if (method.returnsCursor()) { // 游标类型结果查询
           result = executeForCursor(sqlSession, args);
-        } else {
+        } else { // 单条结果查询
           Object param = method.convertArgsToSqlCommandParam(args);
           result = sqlSession.selectOne(command.getName(), param);
           if (method.returnsOptional()
@@ -91,13 +114,14 @@ public class MapperMethod {
           }
         }
         break;
-      case FLUSH:
+      case FLUSH: // 清空缓存语句
         result = sqlSession.flushStatements();
         break;
-      default:
+      default: // 未知语句类型，抛出异常
         throw new BindingException("Unknown execution method for: " + command.getName());
     }
     if (result == null && method.getReturnType().isPrimitive() && !method.returnsVoid()) {
+      // 查询结果为null,但返回类型为基本类型。因此返回变量无法接收查询结果，抛出异常。
       throw new BindingException("Mapper method '" + command.getName()
           + " attempted to return null from a method with a primitive return type (" + method.getReturnType() + ").");
     }
@@ -111,7 +135,7 @@ public class MapperMethod {
     } else if (Integer.class.equals(method.getReturnType()) || Integer.TYPE.equals(method.getReturnType())) {
       result = rowCount;
     } else if (Long.class.equals(method.getReturnType()) || Long.TYPE.equals(method.getReturnType())) {
-      result = (long) rowCount;
+      result = (long)rowCount;
     } else if (Boolean.class.equals(method.getReturnType()) || Boolean.TYPE.equals(method.getReturnType())) {
       result = rowCount > 0;
     } else {
@@ -186,7 +210,7 @@ public class MapperMethod {
       }
       return array;
     } else {
-      return list.toArray((E[]) array);
+      return list.toArray((E[])array);
     }
   }
 
@@ -213,16 +237,19 @@ public class MapperMethod {
       }
       return super.get(key);
     }
-
   }
 
   public static class SqlCommand {
 
+    // SQL语句的名称
     private final String name;
+    // SQL语句的种类，一共分为以下六种：增、删、改、查、清缓存、未知
     private final SqlCommandType type;
 
     public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method method) {
+      // 方法名称
       final String methodName = method.getName();
+      // 方法所在的类。可能是mapperInterface，也可能是mapperInterface的子类
       final Class<?> declaringClass = method.getDeclaringClass();
       MappedStatement ms = resolveMappedStatement(mapperInterface, methodName, declaringClass,
           configuration);
@@ -251,14 +278,27 @@ public class MapperMethod {
       return type;
     }
 
+    /**
+     * 找出指定接口指定方法对应的MappedStatement对象
+     * @param mapperInterface 映射接口
+     * @param methodName 映射接口中具体操作方法名
+     * @param declaringClass 操作方法所在的类。一般是映射接口本身，也可能是映射接口的子类
+     * @param configuration 配置信息
+     * @return MappedStatement对象
+     */
     private MappedStatement resolveMappedStatement(Class<?> mapperInterface, String methodName,
         Class<?> declaringClass, Configuration configuration) {
+      // 数据库操作语句的编号是：接口名.方法名
       String statementId = mapperInterface.getName() + "." + methodName;
+      // configuration保存了解析后的所有操作语句，去查找该语句
       if (configuration.hasStatement(statementId)) {
+        // 从configuration中找到了对应的语句，返回
         return configuration.getMappedStatement(statementId);
       } else if (mapperInterface.equals(declaringClass)) {
+        // 说明递归调用已经到终点，但是仍然没有找到匹配的结果
         return null;
       }
+      // 从方法的定义类开始，沿着父类向上寻找。找到接口类时停止
       for (Class<?> superInterface : mapperInterface.getInterfaces()) {
         if (declaringClass.isAssignableFrom(superInterface)) {
           MappedStatement ms = resolveMappedStatement(superInterface, methodName,
@@ -274,15 +314,25 @@ public class MapperMethod {
 
   public static class MethodSignature {
 
+    // 返回类型是否为集合类型
     private final boolean returnsMany;
+    // 返回类型是否是map
     private final boolean returnsMap;
+    // 返回类型是否是空
     private final boolean returnsVoid;
+    // 返回类型是否是cursor类型
     private final boolean returnsCursor;
+    // 返回类型是否是optional类型
     private final boolean returnsOptional;
+    // 返回类型
     private final Class<?> returnType;
+    // 如果返回为map,这里记录所有的map的key
     private final String mapKey;
+    // resultHandler参数的位置
     private final Integer resultHandlerIndex;
+    // rowBounds参数的位置
     private final Integer rowBoundsIndex;
+    // 引用参数名称解析器
     private final ParamNameResolver paramNameResolver;
 
     public MethodSignature(Configuration configuration, Class<?> mapperInterface, Method method) {
@@ -325,6 +375,10 @@ public class MapperMethod {
       return hasResultHandler() ? (ResultHandler) args[resultHandlerIndex] : null;
     }
 
+    public String getMapKey() {
+      return mapKey;
+    }
+
     public Class<?> getReturnType() {
       return returnType;
     }
@@ -347,7 +401,6 @@ public class MapperMethod {
 
     /**
      * return whether return type is {@code java.util.Optional}.
-     *
      * @return return {@code true}, if return type is {@code java.util.Optional}
      * @since 3.5.0
      */
@@ -355,6 +408,7 @@ public class MapperMethod {
       return returnsOptional;
     }
 
+    // 返回指定参数的index
     private Integer getUniqueParamIndex(Method method, Class<?> paramType) {
       Integer index = null;
       final Class<?>[] argTypes = method.getParameterTypes();
@@ -368,10 +422,6 @@ public class MapperMethod {
         }
       }
       return index;
-    }
-
-    public String getMapKey() {
-      return mapKey;
     }
 
     private String getMapKey(Method method) {

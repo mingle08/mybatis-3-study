@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2017 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -31,7 +31,9 @@ import org.apache.ibatis.reflection.property.PropertyTokenizer;
  */
 public class BeanWrapper extends BaseWrapper {
 
+  // 被包装的对象
   private final Object object;
+  // 被包装对象所属类的元类
   private final MetaClass metaClass;
 
   public BeanWrapper(MetaObject metaObject, Object object) {
@@ -43,6 +45,7 @@ public class BeanWrapper extends BaseWrapper {
   @Override
   public Object get(PropertyTokenizer prop) {
     if (prop.getIndex() != null) {
+      // 不是单一属性，而是有数组
       Object collection = resolveCollection(prop, object);
       return getCollectionValue(prop, collection);
     } else {
@@ -157,6 +160,7 @@ public class BeanWrapper extends BaseWrapper {
     return metaValue;
   }
 
+  // 通过调用getter方法，获取对象属性
   private Object getBeanProperty(PropertyTokenizer prop, Object object) {
     try {
       Invoker method = metaClass.getGetInvoker(prop.getName());

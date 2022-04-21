@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -28,16 +28,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * This is an internal testing utility.<br>
- * You are welcome to use this class for your own purposes,<br>
- * but if there is some feature/enhancement you need for your own usage,<br>
- * please make and modify your own copy instead of sending us an enhancement request.<br>
- *
  * @author Clinton Begin
  */
 public class ScriptRunner {
 
-  private static final String LINE_SEPARATOR = System.lineSeparator();
+  private static final String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
 
   private static final String DEFAULT_DELIMITER = ";";
 
@@ -48,6 +43,7 @@ public class ScriptRunner {
   private boolean stopOnError;
   private boolean throwWarning;
   private boolean autoCommit;
+  // 是否全脚本运行，与之相对的是逐行运行
   private boolean sendFullScript;
   private boolean removeCRs;
   private boolean escapeProcessing = true;
@@ -83,10 +79,6 @@ public class ScriptRunner {
   }
 
   /**
-   * Sets the escape processing.
-   *
-   * @param escapeProcessing
-   *          the new escape processing
    * @since 3.1.1
    */
   public void setEscapeProcessing(boolean escapeProcessing) {
@@ -109,13 +101,19 @@ public class ScriptRunner {
     this.fullLineDelimiter = fullLineDelimiter;
   }
 
+  /**
+   * 执行脚本
+   * @param reader 脚本
+   */
   public void runScript(Reader reader) {
+    // 设置为自动提交
     setAutoCommit();
-
     try {
       if (sendFullScript) {
+        // 全脚本执行
         executeFullScript(reader);
       } else {
+        // 逐行执行
         executeLineByLine(reader);
       }
     } finally {
@@ -123,18 +121,27 @@ public class ScriptRunner {
     }
   }
 
+  /**
+   * 全脚本执行
+   * @param reader 脚本
+   */
   private void executeFullScript(Reader reader) {
+    // 脚本全文
     StringBuilder script = new StringBuilder();
     try {
       BufferedReader lineReader = new BufferedReader(reader);
       String line;
       while ((line = lineReader.readLine()) != null) {
+        // 逐行读入脚本全文
         script.append(line);
         script.append(LINE_SEPARATOR);
       }
+      // 拼接为一条命令
       String command = script.toString();
       println(command);
+      // 执行命令
       executeStatement(command);
+      // 如果没有启用自动提交，则进行提交操作（脚本中可能修改了自动提交设置）
       commitConnection();
     } catch (Exception e) {
       String message = "Error executing: " + script + ".  Cause: " + e;
@@ -148,10 +155,13 @@ public class ScriptRunner {
     try {
       BufferedReader lineReader = new BufferedReader(reader);
       String line;
+      // 逐行依次执行
       while ((line = lineReader.readLine()) != null) {
         handleLine(command, line);
       }
+      // 提交执行
       commitConnection();
+      // 是否存在多余的行
       checkForMissingLineTerminator(command);
     } catch (Exception e) {
       String message = "Error executing: " + command + ".  Cause: " + e;
@@ -160,10 +170,6 @@ public class ScriptRunner {
     }
   }
 
-  /**
-   * @deprecated Since 3.5.4, this method is deprecated. Please close the {@link Connection} outside of this class.
-   */
-  @Deprecated
   public void closeConnection() {
     try {
       connection.close();
@@ -217,7 +223,7 @@ public class ScriptRunner {
       }
       println(trimmedLine);
     } else if (commandReadyToExecute(trimmedLine)) {
-      command.append(line, 0, line.lastIndexOf(delimiter));
+      command.append(line.substring(0, line.lastIndexOf(delimiter)));
       command.append(LINE_SEPARATOR);
       println(command);
       executeStatement(command.toString());
@@ -238,11 +244,12 @@ public class ScriptRunner {
   }
 
   private void executeStatement(String command) throws SQLException {
-    try (Statement statement = connection.createStatement()) {
+    Statement statement = connection.createStatement();
+    try {
       statement.setEscapeProcessing(escapeProcessing);
       String sql = command;
       if (removeCRs) {
-        sql = sql.replace("\r\n", "\n");
+        sql = sql.replaceAll("\r\n", "\n");
       }
       try {
         boolean hasResults = statement.execute(sql);
@@ -260,6 +267,13 @@ public class ScriptRunner {
           String message = "Error executing: " + command + ".  Cause: " + e;
           printlnError(message);
         }
+      }
+    } finally {
+      try {
+        statement.close();
+      } catch (Exception e) {
+        // Ignore to workaround a bug in some connection pools
+        // (Does anyone know the details of the bug?)
       }
     }
   }

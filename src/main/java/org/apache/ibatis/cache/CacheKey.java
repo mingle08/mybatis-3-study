@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -29,33 +29,25 @@ public class CacheKey implements Cloneable, Serializable {
 
   private static final long serialVersionUID = 1146682552656046210L;
 
-  public static final CacheKey NULL_CACHE_KEY = new CacheKey() {
+  public static final CacheKey NULL_CACHE_KEY = new NullCacheKey();
 
-    @Override
-    public void update(Object object) {
-      throw new CacheException("Not allowed to update a null cache key instance.");
-    }
-
-    @Override
-    public void updateAll(Object[] objects) {
-      throw new CacheException("Not allowed to update a null cache key instance.");
-    }
-  };
-
-  private static final int DEFAULT_MULTIPLIER = 37;
+  private static final int DEFAULT_MULTIPLYER = 37;
   private static final int DEFAULT_HASHCODE = 17;
 
+  // 乘数，用来计算hashcode时使用
   private final int multiplier;
+  // 哈希值，整个CacheKey的哈希值。如果两个CacheKey该值不同，则两个CacheKey一定不同
   private int hashcode;
+  // 求和校验值，整个CacheKey的求和校验值。如果两个CacheKey该值不同，则两个CacheKey一定不同
   private long checksum;
+  // 更新次数，整个CacheKey的更新次数
   private int count;
-  // 8/21/2017 - Sonarlint flags this as needing to be marked transient. While true if content is not serializable, this
-  // is not always true and thus should not be marked transient.
+  // 更新历史
   private List<Object> updateList;
 
   public CacheKey() {
     this.hashcode = DEFAULT_HASHCODE;
-    this.multiplier = DEFAULT_MULTIPLIER;
+    this.multiplier = DEFAULT_MULTIPLYER;
     this.count = 0;
     this.updateList = new ArrayList<>();
   }
@@ -69,6 +61,10 @@ public class CacheKey implements Cloneable, Serializable {
     return updateList.size();
   }
 
+  /**
+   * 更新CacheKey
+   * @param object 此次更新的参数
+   */
   public void update(Object object) {
     int baseHashCode = object == null ? 1 : ArrayUtil.hashCode(object);
 
@@ -87,17 +83,23 @@ public class CacheKey implements Cloneable, Serializable {
     }
   }
 
+  /**
+   * 比较当前对象和入参对象（通常也是CacheKey对象）是否相等
+   * @param object 入参对象
+   * @return 是否相等
+   */
   @Override
   public boolean equals(Object object) {
+    // 如果地址一样，是一个对象，肯定相等
     if (this == object) {
       return true;
     }
+    // 如果入参不是CacheKey对象，肯定不相等
     if (!(object instanceof CacheKey)) {
       return false;
     }
-
     final CacheKey cacheKey = (CacheKey) object;
-
+    // 依次通过hashcode、checksum、count判断。必须完全一致才相等
     if (hashcode != cacheKey.hashcode) {
       return false;
     }
@@ -108,6 +110,7 @@ public class CacheKey implements Cloneable, Serializable {
       return false;
     }
 
+    // 详细比较变更历史中的每次变更
     for (int i = 0; i < updateList.size(); i++) {
       Object thisObject = updateList.get(i);
       Object thatObject = cacheKey.updateList.get(i);

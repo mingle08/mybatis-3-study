@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2017 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -20,12 +20,15 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Clinton Begin
+ *  实现包
  */
 public class JakartaCommonsLoggingImpl implements org.apache.ibatis.logging.Log {
 
   private final Log log;
 
   public JakartaCommonsLoggingImpl(String clazz) {
+    // 下面引用的LogFactory是rg.apache.commons.logging.LogFactory
+    // 因此获得了CommonsLogging的log
     log = LogFactory.getLog(clazz);
   }
 

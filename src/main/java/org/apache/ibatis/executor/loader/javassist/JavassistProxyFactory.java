@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ public class JavassistProxyFactory implements org.apache.ibatis.executor.loader.
         LogHolder.log.debug(WRITE_REPLACE_METHOD + " method was found on bean " + type + ", make sure it returns this");
       }
     } catch (NoSuchMethodException e) {
-      enhancer.setInterfaces(new Class[] { WriteReplaceInterface.class });
+      enhancer.setInterfaces(new Class[]{WriteReplaceInterface.class});
     } catch (SecurityException e) {
       // nothing to do here
     }
@@ -140,20 +140,29 @@ public class JavassistProxyFactory implements org.apache.ibatis.executor.loader.
             }
           } else {
             if (lazyLoader.size() > 0 && !FINALIZE_METHOD.equals(methodName)) {
+              // 如果是aggressive，则包括非懒加载属性的读操作也会触发懒加载
+              // 同时几个触发方法也会引发所有属性的加载
               if (aggressive || lazyLoadTriggerMethods.contains(methodName)) {
                 lazyLoader.loadAll();
               } else if (PropertyNamer.isSetter(methodName)) {
+                // 调用了赋值方法
+                // 得到要赋值的属性名称
                 final String property = PropertyNamer.methodToProperty(methodName);
+                // 因为被赋值，因此该属性的懒加载操作直接取消，以赋值为准
                 lazyLoader.remove(property);
               } else if (PropertyNamer.isGetter(methodName)) {
+                // 是读方法
                 final String property = PropertyNamer.methodToProperty(methodName);
+                // 判断对该属性是否有懒加载
                 if (lazyLoader.hasLoader(property)) {
+                  // 如果有，就加载下
                   lazyLoader.load(property);
                 }
               }
             }
           }
         }
+        // 对代理执行方法操作
         return methodProxy.invoke(enhanced, args);
       } catch (Throwable t) {
         throw ExceptionUtil.unwrapThrowable(t);

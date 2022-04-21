@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2016 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -22,28 +22,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The annotation that specify the parameter name.
- *
- * <p>
- * <b>How to use:</b>
- *
- * <pre>
- * public interface UserMapper {
- *   &#064;Select("SELECT id, name FROM users WHERE name = #{name}")
- *   User selectById(&#064;Param("name") String value);
- * }
- * </pre>
- *
  * @author Clinton Begin
  */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
+@Documented // 表明该注解会保留在API文档中
+@Retention(RetentionPolicy.RUNTIME) // 表明注解会保留到运行阶段
+@Target(ElementType.PARAMETER) // 表明注解可以应用在参数上
 public @interface Param {
-  /**
-   * Returns the parameter name.
-   *
-   * @return the parameter name
-   */
-  String value();
+  String value(); // 整个注解只有一个属性，名为value
 }

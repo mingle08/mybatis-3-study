@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2015 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.apache.ibatis.session;
 /**
  * @author Eduardo Macarron
  */
+// 本地缓存作用域
 public enum LocalCacheScope {
-  SESSION,STATEMENT
+  SESSION,  // 本地缓存的作用域为一次回话
+  STATEMENT // 本地缓存的作用域为一条语句，也就是不进行任何缓存
 }

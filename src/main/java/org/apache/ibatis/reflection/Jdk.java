@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import org.apache.ibatis.io.Resources;
 
 /**
  * To check the existence of version dependent classes.
+ * 因为不同JDK提供的包不禁相同，该方法来判断当前的JDK到底是不是存在指定的包。
+ * 里面有大量静态代码块，因此会在类的初始化阶段完成相关的判断。
  */
 public class Jdk {
 

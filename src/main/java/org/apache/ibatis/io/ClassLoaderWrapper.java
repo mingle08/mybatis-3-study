@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -175,28 +175,38 @@ public class ClassLoaderWrapper {
    * @return the class
    * @throws ClassNotFoundException - Remember the wisdom of Judge Smails: Well, the world needs ditch diggers, too.
    */
+  /**
+   * 轮番使用各个加载器尝试加载一个类
+   * @param name 类名
+   * @param classLoader 类加载列表
+   * @return 加载出的类
+   * @throws ClassNotFoundException
+   */
   Class<?> classForName(String name, ClassLoader[] classLoader) throws ClassNotFoundException {
-
+    // 对五个classLoader依次尝试
     for (ClassLoader cl : classLoader) {
-
       if (null != cl) {
-
         try {
-
-          return Class.forName(name, true, cl);
-
+          // 使用当前类加载器尝试是否能成功
+          Class<?> c = Class.forName(name, true, cl);
+          if (null != c) {
+            // 只要找到目标类，则返回结果
+            return c;
+          }
         } catch (ClassNotFoundException e) {
-          // we'll ignore this until all classloaders fail to locate the class
-        }
-
+          // 故意忽略该异常，因为这只是在某一个classLoader中没找到目标类。下面会在所有classLoader均寻找失败后重新抛出该异常
       }
-
+      }
     }
-
+    // 所有classLoader均寻找失败,抛出异常
     throw new ClassNotFoundException("Cannot find class: " + name);
-
   }
 
+  /**
+   * 获取所有的类加载器
+   * @param classLoader 传入的一种类加载器
+   * @return 所有类加载器的列表
+   */
   ClassLoader[] getClassLoaders(ClassLoader classLoader) {
     return new ClassLoader[]{
         classLoader,

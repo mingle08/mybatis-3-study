@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -28,11 +28,11 @@ import java.util.concurrent.locks.ReadWriteLock;
  *
  * <pre>
  * public MyCache(final String id) {
- *   if (id == null) {
- *     throw new IllegalArgumentException("Cache instances require an ID");
- *   }
- *   this.id = id;
- *   initialize();
+ *  if (id == null) {
+ *    throw new IllegalArgumentException("Cache instances require an ID");
+ *  }
+ *  this.id = id;
+ *  initialize();
  * }
  * </pre>
  *
@@ -44,20 +44,34 @@ public interface Cache {
   /**
    * @return The identifier of this cache
    */
+
+  /**
+   * 获取缓存id
+   * @return 缓存id
+   */
   String getId();
 
   /**
-   * @param key
-   *          Can be any object but usually it is a {@link CacheKey}
-   * @param value
-   *          The result of a select.
+   * @param key Can be any object but usually it is a {@link CacheKey}
+   * @param value The result of a select.
+   */
+
+  /**
+   * 向缓存写入一条信息
+   * @param key 信息的键
+   * @param value 信息的值
    */
   void putObject(Object key, Object value);
 
   /**
-   * @param key
-   *          The key
+   * @param key The key
    * @return The object stored in the cache.
+   */
+
+  /**
+   * 从缓存中读取一条信息
+   * @param key 信息的键
+   * @return 信息的值
    */
   Object getObject(Object key);
 
@@ -72,14 +86,23 @@ public interface Cache {
    * available instead of hitting the database.
    *
    *
-   * @param key
-   *          The key
+   * @param key The key
    * @return Not used
+   */
+
+  /**
+   * 从缓存中删除一条信息
+   * @param key 信息的键
+   * @return 原来的信息值
    */
   Object removeObject(Object key);
 
   /**
    * Clears this cache instance.
+   */
+
+  /**
+   * 清空缓存
    */
   void clear();
 
@@ -87,6 +110,11 @@ public interface Cache {
    * Optional. This method is not called by the core.
    *
    * @return The number of elements stored in the cache (not its capacity).
+   */
+
+  /**
+   * 读取缓存中信息的数目
+   * @return 信息的数目
    */
   int getSize();
 
@@ -96,6 +124,11 @@ public interface Cache {
    * Any locking needed by the cache must be provided internally by the cache provider.
    *
    * @return A ReadWriteLock
+   */
+
+  /**
+   * 获取读写锁，该方法已经废弃
+   * @return 读写锁
    */
   default ReadWriteLock getReadWriteLock() {
     return null;

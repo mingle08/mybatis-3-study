@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -43,17 +42,25 @@ import org.xml.sax.SAXParseException;
 /**
  * @author Clinton Begin
  * @author Kazuki Shimizu
+ * 解析XML的解析器
  */
 public class XPathParser {
 
+  // 代表要解析的整个XML文档
   private final Document document;
+  // 是否开启验证
   private boolean validation;
+  // EntityResolver，通过它可以声明寻找DTD文件的方法，例如通过本地寻找，而不是只能通过网络下载dtd文件
   private EntityResolver entityResolver;
+  // MyBatis配置文件中的properties信息
   private Properties variables;
+  // javax.xml.xpath.XPath工具
   private XPath xpath;
 
   public XPathParser(String xml) {
+    // 初始化属性
     commonConstructor(false, null, null);
+    // 从输入中获取整个xml文档
     this.document = createDocument(new InputSource(new StringReader(xml)));
   }
 
@@ -140,8 +147,16 @@ public class XPathParser {
     return evalString(document, expression);
   }
 
+  /**
+   * 解析XML文件中的字符串
+   * @param root 解析根
+   * @param expression 解析的语句
+   * @return 解析出的字符串
+   */
   public String evalString(Object root, String expression) {
+    // 解析出字符串结果
     String result = (String) evaluate(expression, root, XPathConstants.STRING);
+    // 对字符串中的属性进行处理
     result = PropertyParser.parse(result, variables);
     return result;
   }
@@ -219,8 +234,16 @@ public class XPathParser {
     return new XNode(this, node, variables);
   }
 
+  /**
+   * 进行XML节点的解析
+   * @param expression 解析的语句
+   * @param root 解析根
+   * @param returnType 返回值类型
+   * @return 解析结果
+   */
   private Object evaluate(String expression, Object root, QName returnType) {
     try {
+      // 对指定节点root运行解析语法expression，获得returnType类型的解析结果
       return xpath.evaluate(expression, root, returnType);
     } catch (Exception e) {
       throw new BuilderException("Error evaluating XPath.  Cause: " + e, e);
@@ -230,8 +253,8 @@ public class XPathParser {
   private Document createDocument(InputSource inputSource) {
     // important: this must only be called AFTER common constructor
     try {
+      // DOM文档创建器的工厂
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
       factory.setValidating(validation);
 
       factory.setNamespaceAware(false);
@@ -240,6 +263,7 @@ public class XPathParser {
       factory.setCoalescing(false);
       factory.setExpandEntityReferences(true);
 
+      // DOM文档创建器
       DocumentBuilder builder = factory.newDocumentBuilder();
       builder.setEntityResolver(entityResolver);
       builder.setErrorHandler(new ErrorHandler() {
@@ -255,7 +279,6 @@ public class XPathParser {
 
         @Override
         public void warning(SAXParseException exception) throws SAXException {
-          // NOP
         }
       });
       return builder.parse(inputSource);

@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -26,9 +26,10 @@ import org.apache.ibatis.cache.CacheException;
  */
 public class PerpetualCache implements Cache {
 
+  // Cache的id，一般为所在的namespace
   private final String id;
-
-  private final Map<Object, Object> cache = new HashMap<>();
+  // 用来存储要缓存的信息
+  private Map<Object, Object> cache = new HashMap<>();
 
   public PerpetualCache(String id) {
     this.id = id;

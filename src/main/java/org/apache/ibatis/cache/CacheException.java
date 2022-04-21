@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2015 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -24,18 +24,19 @@ public class CacheException extends PersistenceException {
 
   private static final long serialVersionUID = -193202262468464650L;
 
+  // 方法一
   public CacheException() {
     super();
   }
-
+  // 方法二
   public CacheException(String message) {
     super(message);
   }
-
+  // 方法三
   public CacheException(String message, Throwable cause) {
     super(message, cause);
   }
-
+  // 方法四
   public CacheException(Throwable cause) {
     super(cause);
   }

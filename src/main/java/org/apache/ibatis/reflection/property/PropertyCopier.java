@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.apache.ibatis.reflection.Reflector;
 
 /**
  * @author Clinton Begin
+ * 属性拷贝器
  */
 public final class PropertyCopier {
 
@@ -28,10 +29,19 @@ public final class PropertyCopier {
     // Prevent Instantiation of Static Class
   }
 
+  /**
+   * 完成对象的输出拷贝
+   * @param type 对象的类型
+   * @param sourceBean 提供属性值的对象
+   * @param destinationBean 要被写入新属性值的对象
+   */
   public static void copyBeanProperties(Class<?> type, Object sourceBean, Object destinationBean) {
+    // 这两个对象同属的类
     Class<?> parent = type;
     while (parent != null) {
+      // 获取该类的所有属性
       final Field[] fields = parent.getDeclaredFields();
+      // 循环遍历属性进行拷贝
       for (Field field : fields) {
         try {
           try {

@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2017 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -21,10 +21,17 @@ import java.lang.reflect.Method;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 代表了一个调用的详细信息
+ */
 public class Invocation {
 
+  // 目标对象
   private final Object target;
+  // 目标方法
   private final Method method;
+  // 方法参数
   private final Object[] args;
 
   public Invocation(Object target, Method method, Object[] args) {

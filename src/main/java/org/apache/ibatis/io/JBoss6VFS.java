@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -36,8 +36,7 @@ public class JBoss6VFS extends VFS {
   /** A class that mimics a tiny subset of the JBoss VirtualFile class. */
   static class VirtualFile {
     static Class<?> VirtualFile;
-    static Method getPathNameRelativeTo;
-    static Method getChildrenRecursively;
+    static Method getPathNameRelativeTo, getChildrenRecursively;
 
     Object virtualFile;
 
@@ -45,6 +44,11 @@ public class JBoss6VFS extends VFS {
       this.virtualFile = virtualFile;
     }
 
+    /**
+     * 获取相关的路径名
+     * @param parent 父级路径名
+     * @return 相关路径名
+     */
     String getPathNameRelativeTo(VirtualFile parent) {
       try {
         return invoke(getPathNameRelativeTo, virtualFile, parent.virtualFile);
@@ -66,6 +70,7 @@ public class JBoss6VFS extends VFS {
   }
 
   /** A class that mimics a tiny subset of the JBoss VFS class. */
+  // 对JBoss VFS类子集的模仿
   static class VFS {
     static Class<?> VFS;
     static Method getChild;
@@ -84,23 +89,26 @@ public class JBoss6VFS extends VFS {
   private static Boolean valid;
 
   /** Find all the classes and methods that are required to access the JBoss 6 VFS. */
+  /**
+   * 初始化JBoss6VFS类。主要是根据被代理类是否存在来判断自身是否可用
+   */
   protected static synchronized void initialize() {
     if (valid == null) {
-      // Assume valid. It will get flipped later if something goes wrong.
+      // 首先假设是可用的
       valid = Boolean.TRUE;
 
-      // Look up and verify required classes
+      // 校验所需要的类是否存在。如果不存在，则valid设置为false
       VFS.VFS = checkNotNull(getClass("org.jboss.vfs.VFS"));
       VirtualFile.VirtualFile = checkNotNull(getClass("org.jboss.vfs.VirtualFile"));
 
-      // Look up and verify required methods
+      // 校验所需要的方法是否存在。如果不存在，则valid设置为false
       VFS.getChild = checkNotNull(getMethod(VFS.VFS, "getChild", URL.class));
       VirtualFile.getChildrenRecursively = checkNotNull(getMethod(VirtualFile.VirtualFile,
           "getChildrenRecursively"));
       VirtualFile.getPathNameRelativeTo = checkNotNull(getMethod(VirtualFile.VirtualFile,
           "getPathNameRelativeTo", VirtualFile.VirtualFile));
 
-      // Verify that the API has not changed
+      // 判断以上所需方法的返回值是否和预期一致。如果不一致，则valid设置为false
       checkReturnType(VFS.getChild, VirtualFile.VirtualFile);
       checkReturnType(VirtualFile.getChildrenRecursively, List.class);
       checkReturnType(VirtualFile.getPathNameRelativeTo, String.class);
@@ -111,11 +119,7 @@ public class JBoss6VFS extends VFS {
    * Verifies that the provided object reference is null. If it is null, then this VFS is marked
    * as invalid for the current environment.
    *
-   * @param <T>
-   *          the generic type
-   * @param object
-   *          The object reference to check for null.
-   * @return the t
+   * @param object The object reference to check for null.
    */
   protected static <T> T checkNotNull(T object) {
     if (object == null) {
@@ -141,16 +145,17 @@ public class JBoss6VFS extends VFS {
     }
   }
 
-  /**
-   * Mark this {@link VFS} as invalid for the current environment.
-   */
+  /** Mark this {@link VFS} as invalid for the current environment. */
   protected static void setInvalid() {
-    if (JBoss6VFS.valid.booleanValue()) {
+    if (JBoss6VFS.valid == Boolean.TRUE) {
       log.debug("JBoss 6 VFS API is not available in this environment.");
       JBoss6VFS.valid = Boolean.FALSE;
     }
   }
 
+  /**
+   * JBoss6VFS中的静态代码块
+   */
   static {
     initialize();
   }

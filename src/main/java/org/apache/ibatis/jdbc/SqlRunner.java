@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -76,11 +76,25 @@ public class SqlRunner {
    * @return The list of rows expected.
    * @throws SQLException If statement preparation or execution fails
    */
+
+  /**
+   * 执行多个数据的查询操作，即SELECT操作
+   * @param sql 要查询的SQL语句
+   * @param args SQL语句的参数
+   * @return 查询结果
+   * @throws SQLException
+   */
   public List<Map<String, Object>> selectAll(String sql, Object... args) throws SQLException {
-    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+    PreparedStatement ps = connection.prepareStatement(sql);
+    try {
       setParameters(ps, args);
-      try (ResultSet rs = ps.executeQuery()) {
-        return getResults(rs);
+      ResultSet rs = ps.executeQuery();
+      return getResults(rs);
+    } finally {
+      try {
+        ps.close();
+      } catch (SQLException e) {
+        //ignore
       }
     }
   }
@@ -96,6 +110,7 @@ public class SqlRunner {
   public int insert(String sql, Object... args) throws SQLException {
     PreparedStatement ps;
     if (useGeneratedKeySupport) {
+      // 设置允许自增主键
       ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
     } else {
       ps = connection.prepareStatement(sql);
@@ -105,19 +120,18 @@ public class SqlRunner {
       setParameters(ps, args);
       ps.executeUpdate();
       if (useGeneratedKeySupport) {
-        try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-          List<Map<String, Object>> keys = getResults(generatedKeys);
-          if (keys.size() == 1) {
-            Map<String, Object> key = keys.get(0);
-            Iterator<Object> i = key.values().iterator();
-            if (i.hasNext()) {
-              Object genkey = i.next();
-              if (genkey != null) {
-                try {
-                  return Integer.parseInt(genkey.toString());
-                } catch (NumberFormatException e) {
-                  //ignore, no numeric key support
-                }
+        // 返回自增的键值
+        List<Map<String, Object>> keys = getResults(ps.getGeneratedKeys());
+        if (keys.size() == 1) {
+          Map<String, Object> key = keys.get(0);
+          Iterator<Object> i = key.values().iterator();
+          if (i.hasNext()) {
+            Object genkey = i.next();
+            if (genkey != null) {
+              try {
+                return Integer.parseInt(genkey.toString());
+              } catch (NumberFormatException e) {
+                //ignore, no numeric key support
               }
             }
           }
@@ -142,9 +156,16 @@ public class SqlRunner {
    * @throws SQLException If statement preparation or execution fails
    */
   public int update(String sql, Object... args) throws SQLException {
-    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+    PreparedStatement ps = connection.prepareStatement(sql);
+    try {
       setParameters(ps, args);
       return ps.executeUpdate();
+    } finally {
+      try {
+        ps.close();
+      } catch (SQLException e) {
+        //ignore
+      }
     }
   }
 
@@ -168,15 +189,18 @@ public class SqlRunner {
    * @throws SQLException If statement preparation or execution fails
    */
   public void run(String sql) throws SQLException {
-    try (Statement stmt = connection.createStatement()) {
+    Statement stmt = connection.createStatement();
+    try {
       stmt.execute(sql);
+    } finally {
+      try {
+        stmt.close();
+      } catch (SQLException e) {
+        //ignore
+      }
     }
   }
 
-  /**
-   * @deprecated Since 3.5.4, this method is deprecated. Please close the {@link Connection} outside of this class.
-   */
-  @Deprecated
   public void closeConnection() {
     try {
       connection.close();
@@ -188,6 +212,7 @@ public class SqlRunner {
   private void setParameters(PreparedStatement ps, Object... args) throws SQLException {
     for (int i = 0, n = args.length; i < n; i++) {
       if (args[i] == null) {
+        // SqlRunner需要Null实例来表示与JDBC类型兼容的空值
         throw new SQLException("SqlRunner requires an instance of Null to represent typed null values for JDBC compatibility");
       } else if (args[i] instanceof Null) {
         ((Null) args[i]).getTypeHandler().setParameter(ps, i + 1, null, ((Null) args[i]).getJdbcType());
@@ -202,34 +227,60 @@ public class SqlRunner {
     }
   }
 
+  /**
+   * 处理数据库操作的返回结果
+   * @param rs 返回的结果
+   * @return 处理后的结果列表
+   * @throws SQLException
+   */
   private List<Map<String, Object>> getResults(ResultSet rs) throws SQLException {
-    List<Map<String, Object>> list = new ArrayList<>();
-    List<String> columns = new ArrayList<>();
-    List<TypeHandler<?>> typeHandlers = new ArrayList<>();
-    ResultSetMetaData rsmd = rs.getMetaData();
-    for (int i = 0, n = rsmd.getColumnCount(); i < n; i++) {
-      columns.add(rsmd.getColumnLabel(i + 1));
-      try {
-        Class<?> type = Resources.classForName(rsmd.getColumnClassName(i + 1));
-        TypeHandler<?> typeHandler = typeHandlerRegistry.getTypeHandler(type);
-        if (typeHandler == null) {
-          typeHandler = typeHandlerRegistry.getTypeHandler(Object.class);
+    try {
+      List<Map<String, Object>> list = new ArrayList<>();
+      // 返回结果的字段名列表，按照字段顺序排列
+      List<String> columns = new ArrayList<>();
+      // 返回结果的类型处理器列表，按照字段顺序排列
+      List<TypeHandler<?>> typeHandlers = new ArrayList<>();
+      // 获取返回结果的表信息、字段信息等
+      ResultSetMetaData rsmd = rs.getMetaData();
+      for (int i = 0, n = rsmd.getColumnCount(); i < n; i++) {
+        // 记录字段名
+        columns.add(rsmd.getColumnLabel(i + 1));
+        // 记录字段的对应类型处理器
+        try {
+          Class<?> type = Resources.classForName(rsmd.getColumnClassName(i + 1));
+          TypeHandler<?> typeHandler = typeHandlerRegistry.getTypeHandler(type);
+          if (typeHandler == null) {
+            typeHandler = typeHandlerRegistry.getTypeHandler(Object.class);
+          }
+          typeHandlers.add(typeHandler);
+        } catch (Exception e) {
+          // 默认的类型处理器是Object处理器
+          typeHandlers.add(typeHandlerRegistry.getTypeHandler(Object.class));
         }
-        typeHandlers.add(typeHandler);
-      } catch (Exception e) {
-        typeHandlers.add(typeHandlerRegistry.getTypeHandler(Object.class));
+      }
+      // 循环处理结果
+      while (rs.next()) {
+        Map<String, Object> row = new HashMap<>();
+        for (int i = 0, n = columns.size(); i < n; i++) {
+          // 字段名
+          String name = columns.get(i);
+          // 对应处理器
+          TypeHandler<?> handler = typeHandlers.get(i);
+          // 放入结果中，key为字段名大写，value为取出的结果值
+          row.put(name.toUpperCase(Locale.ENGLISH), handler.getResult(rs, name));
+        }
+        list.add(row);
+      }
+      return list;
+    } finally {
+      if (rs != null) {
+        try {
+          rs.close();
+        } catch (Exception e) {
+          // ignore
+        }
       }
     }
-    while (rs.next()) {
-      Map<String, Object> row = new HashMap<>();
-      for (int i = 0, n = columns.size(); i < n; i++) {
-        String name = columns.get(i);
-        TypeHandler<?> handler = typeHandlers.get(i);
-        row.put(name.toUpperCase(Locale.ENGLISH), handler.getResult(rs, name));
-      }
-      list.add(row);
-    }
-    return list;
   }
 
 }

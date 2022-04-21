@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -45,9 +45,13 @@ public class PreparedStatementHandler extends BaseStatementHandler {
   public int update(Statement statement) throws SQLException {
     PreparedStatement ps = (PreparedStatement) statement;
     ps.execute();
+    // 返回影响条数
     int rows = ps.getUpdateCount();
+    // 参数对象
     Object parameterObject = boundSql.getParameterObject();
+    // 主键自增器
     KeyGenerator keyGenerator = mappedStatement.getKeyGenerator();
+    // 后置执行主键自增
     keyGenerator.processAfter(executor, mappedStatement, ps, parameterObject);
     return rows;
   }
@@ -61,7 +65,9 @@ public class PreparedStatementHandler extends BaseStatementHandler {
   @Override
   public <E> List<E> query(Statement statement, ResultHandler resultHandler) throws SQLException {
     PreparedStatement ps = (PreparedStatement) statement;
+    // 执行真正的查询，查询完成后，结果就在ps中了
     ps.execute();
+    // 由resultSetHandler继续处理结果
     return resultSetHandler.handleResultSets(ps);
   }
 

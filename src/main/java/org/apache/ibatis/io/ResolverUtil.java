@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -30,6 +30,14 @@ import org.apache.ibatis.logging.LogFactory;
  * another class, or that is it annotated with a specific annotation. However, through the use
  * of the {@link Test} class it is possible to search using arbitrary conditions.</p>
  *
+ * ResolverUtil 用来定位某个class路径下满足任意条件的类们。通常的筛选条件是：
+ * 类继承了某个接口
+ * 实现了某个类
+ * 类拥有可定的注解
+ * 基于Test类可以用来判断某各类是否满足这些条件
+ *
+ *
+ *
  * <p>A ClassLoader is used to locate all locations (directories and jar files) in the class
  * path that contain classes within certain packages, and then to load those classes and
  * check them. By default the ClassLoader returned by
@@ -37,7 +45,8 @@ import org.apache.ibatis.logging.LogFactory;
  * by calling {@link #setClassLoader(ClassLoader)} prior to invoking any of the {@code find()}
  * methods.</p>
  *
- * <p>General searches are initiated by calling the {@link #find(Test, String)} and supplying
+ * <p>General searches are initiated by calling the
+ * {@link #find(org.apache.ibatis.io.ResolverUtil.Test, String)} ()} method and supplying
  * a package name and a Test instance. This will cause the named package <b>and all sub-packages</b>
  * to be scanned for classes that meet the test. There are also utility methods for the common
  * use cases of scanning multiple packages for extensions of particular classes, or classes
@@ -54,12 +63,9 @@ import org.apache.ibatis.logging.LogFactory;
  * </pre>
  *
  * @author Tim Fennell
- * @param <T>
- *          the generic type
  */
 public class ResolverUtil<T> {
-
-  /**
+  /*
    * An instance of Log to use for logging in this class.
    */
   private static final Log log = LogFactory.getLog(ResolverUtil.class);
@@ -69,14 +75,9 @@ public class ResolverUtil<T> {
    * are to be included in the results produced by the ResolverUtil.
    */
   public interface Test {
-
     /**
      * Will be called repeatedly with candidate classes. Must return True if a class
      * is to be included in the results, false otherwise.
-     *
-     * @param type
-     *          the type
-     * @return true, if successful
      */
     boolean matches(Class<?> type);
   }
@@ -86,16 +87,9 @@ public class ResolverUtil<T> {
    * that this test will match the parent type itself if it is presented for matching.
    */
   public static class IsA implements Test {
-
-    /** The parent. */
     private Class<?> parent;
 
-    /**
-     * Constructs an IsA test using the supplied Class as the parent class/interface.
-     *
-     * @param parentType
-     *          the parent type
-     */
+    /** Constructs an IsA test using the supplied Class as the parent class/interface. */
     public IsA(Class<?> parentType) {
       this.parent = parentType;
     }
@@ -117,16 +111,9 @@ public class ResolverUtil<T> {
    * is, then the test returns true, otherwise false.
    */
   public static class AnnotatedWith implements Test {
-
-    /** The annotation. */
     private Class<? extends Annotation> annotation;
 
-    /**
-     * Constructs an AnnotatedWith test for the specified annotation type.
-     *
-     * @param annotation
-     *          the annotation
-     */
+    /** Constructs an AnnotatedWith test for the specified annotation type. */
     public AnnotatedWith(Class<? extends Annotation> annotation) {
       this.annotation = annotation;
     }
@@ -188,11 +175,8 @@ public class ResolverUtil<T> {
    * of a non-interface class, subclasses will be collected.  Accumulated classes can be
    * accessed by calling {@link #getClasses()}.
    *
-   * @param parent
-   *          the class of interface to find subclasses or implementations of
-   * @param packageNames
-   *          one or more package names to scan (including subpackages) for classes
-   * @return the resolver util
+   * @param parent the class of interface to find subclasses or implementations of
+   * @param packageNames one or more package names to scan (including subpackages) for classes
    */
   public ResolverUtil<T> findImplementations(Class<?> parent, String... packageNames) {
     if (packageNames == null) {
@@ -211,11 +195,8 @@ public class ResolverUtil<T> {
    * Attempts to discover classes that are annotated with the annotation. Accumulated
    * classes can be accessed by calling {@link #getClasses()}.
    *
-   * @param annotation
-   *          the annotation that should be present on matching classes
-   * @param packageNames
-   *          one or more package names to scan (including subpackages) for classes
-   * @return the resolver util
+   * @param annotation the annotation that should be present on matching classes
+   * @param packageNames one or more package names to scan (including subpackages) for classes
    */
   public ResolverUtil<T> findAnnotated(Class<? extends Annotation> annotation, String... packageNames) {
     if (packageNames == null) {
@@ -236,26 +217,32 @@ public class ResolverUtil<T> {
    * true the class is retained.  Accumulated classes can be fetched by calling
    * {@link #getClasses()}.
    *
-   * @param test
-   *          an instance of {@link Test} that will be used to filter classes
-   * @param packageName
-   *          the name of the package from which to start scanning for classes, e.g. {@code net.sourceforge.stripes}
-   * @return the resolver util
+   * @param test an instance of {@link Test} that will be used to filter classes
+   * @param packageName the name of the package from which to start scanning for
+   *        classes, e.g. {@code net.sourceforge.stripes}
+   */
+  /**
+   * 筛选出指定路径下符合一定条件的类
+   * @param test 测试条件
+   * @param packageName 路径
+   * @return ResolverUtil本身
    */
   public ResolverUtil<T> find(Test test, String packageName) {
+    // 获取起始包路径
     String path = getPackagePath(packageName);
-
     try {
+      // 找出包中的各个文件
       List<String> children = VFS.getInstance().list(path);
       for (String child : children) {
-        if (child.endsWith(".class")) {
+        // 对类文件进行测试
+        if (child.endsWith(".class")) { // 必须是类文件
+          // 测试是否满足测试条件。如果满足，则将该类文件记录下来
           addIfMatching(test, child);
         }
       }
     } catch (IOException ioe) {
       log.error("Could not read package: " + packageName, ioe);
     }
-
     return this;
   }
 
@@ -263,9 +250,7 @@ public class ResolverUtil<T> {
    * Converts a Java package name to a path that can be looked up with a call to
    * {@link ClassLoader#getResources(String)}.
    *
-   * @param packageName
-   *          The Java package name to convert to a path
-   * @return the package path
+   * @param packageName The Java package name to convert to a path
    */
   protected String getPackagePath(String packageName) {
     return packageName == null ? null : packageName.replace('.', '/');
@@ -278,22 +263,30 @@ public class ResolverUtil<T> {
    * @param test the test used to determine if the class matches
    * @param fqn the fully qualified name of a class
    */
+  /**
+   * 判断一个类文件是否满足条件。如果满足则记录下来
+   * @param test 测试条件
+   * @param fqn 类文件全名
+   */
   @SuppressWarnings("unchecked")
   protected void addIfMatching(Test test, String fqn) {
     try {
+      // 转化为外部名称
       String externalName = fqn.substring(0, fqn.indexOf('.')).replace('/', '.');
+      // 类加载器
       ClassLoader loader = getClassLoader();
       if (log.isDebugEnabled()) {
         log.debug("Checking to see if class " + externalName + " matches criteria [" + test + "]");
       }
-
+      // 加载类文件
       Class<?> type = loader.loadClass(externalName);
-      if (test.matches(type)) {
+      if (test.matches(type)) { // 执行测试
+        // 测试通过则记录到matches属性中
         matches.add((Class<T>) type);
       }
     } catch (Throwable t) {
-      log.warn("Could not examine class '" + fqn + "'" + " due to a "
-          + t.getClass().getName() + " with message: " + t.getMessage());
+      log.warn("Could not examine class '" + fqn + "'" + " due to a " +
+          t.getClass().getName() + " with message: " + t.getMessage());
     }
   }
 }

@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -25,10 +25,15 @@ import java.io.Closeable;
  *
  * @author Guillaume Darmont / guillaume@dropinocean.com
  */
+// 游标能够基于迭代器遍历项目
 public interface Cursor<T> extends Closeable, Iterable<T> {
 
   /**
    * @return true if the cursor has started to fetch items from database.
+   */
+  /**
+   * 游标是否开启
+   * @return 是否开启
    */
   boolean isOpen();
 
@@ -36,12 +41,19 @@ public interface Cursor<T> extends Closeable, Iterable<T> {
    *
    * @return true if the cursor is fully consumed and has returned all elements matching the query.
    */
+  /**
+   * 是否已经完成了所有遍历
+   * @return 是否完成了所有遍历
+   */
   boolean isConsumed();
 
   /**
    * Get the current item index. The first item has the index 0.
-   *
    * @return -1 if the first cursor item has not been retrieved. The index of the current item retrieved.
+   */
+  /**
+   * 返回当前元素的索引
+   * @return 当前元素的索引
    */
   int getCurrentIndex();
 }

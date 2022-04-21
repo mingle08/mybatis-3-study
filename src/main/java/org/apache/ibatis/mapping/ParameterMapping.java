@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -24,19 +24,32 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
  * @author Clinton Begin
+ * SQL语句中的#{}详细应该是这样的：
+ * #｛ id, javaType= int, jdbcType=NUMERIC, typeHandler=DemoTypeHandler ｝
+ * 该对象就用来存储这个内容
+ * 但是对于大多数情况，只有 property=id这一项。其他的会被推测出来，而不是被指定
  */
 public class ParameterMapping {
 
   private Configuration configuration;
 
+  // 参数的名称
   private String property;
+  // 输入还是输出参数，针对存储过程有用
   private ParameterMode mode;
+  // 参数的java类型
   private Class<?> javaType = Object.class;
+  // 参数的jdbc类型
   private JdbcType jdbcType;
+  // 数值精度
   private Integer numericScale;
+  // 类型处理器
   private TypeHandler<?> typeHandler;
+  // 参数为OUT或者INOUT时，对应的resultMap的
   private String resultMapId;
+  // jdbcType属性值
   private String jdbcTypeName;
+  // 扩展字段
   private String expression;
 
   private ParameterMapping() {
@@ -137,8 +150,7 @@ public class ParameterMapping {
 
   /**
    * Used for handling output of callable statements.
-   *
-   * @return the mode
+   * @return
    */
   public ParameterMode getMode() {
     return mode;
@@ -146,8 +158,7 @@ public class ParameterMapping {
 
   /**
    * Used for handling output of callable statements.
-   *
-   * @return the java type
+   * @return
    */
   public Class<?> getJavaType() {
     return javaType;
@@ -155,8 +166,7 @@ public class ParameterMapping {
 
   /**
    * Used in the UnknownTypeHandler in case there is no handler for the property type.
-   *
-   * @return the jdbc type
+   * @return
    */
   public JdbcType getJdbcType() {
     return jdbcType;
@@ -164,8 +174,7 @@ public class ParameterMapping {
 
   /**
    * Used for handling output of callable statements.
-   *
-   * @return the numeric scale
+   * @return
    */
   public Integer getNumericScale() {
     return numericScale;
@@ -173,8 +182,7 @@ public class ParameterMapping {
 
   /**
    * Used when setting parameters to the PreparedStatement.
-   *
-   * @return the type handler
+   * @return
    */
   public TypeHandler<?> getTypeHandler() {
     return typeHandler;
@@ -182,8 +190,7 @@ public class ParameterMapping {
 
   /**
    * Used for handling output of callable statements.
-   *
-   * @return the result map id
+   * @return
    */
   public String getResultMapId() {
     return resultMapId;
@@ -191,17 +198,15 @@ public class ParameterMapping {
 
   /**
    * Used for handling output of callable statements.
-   *
-   * @return the jdbc type name
+   * @return
    */
   public String getJdbcTypeName() {
     return jdbcTypeName;
   }
 
   /**
-   * Expression 'Not used'.
-   *
-   * @return the expression
+   * Not used
+   * @return
    */
   public String getExpression() {
     return expression;

@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -43,8 +43,8 @@ public final class LogFactory {
     // disable construction
   }
 
-  public static Log getLog(Class<?> clazz) {
-    return getLog(clazz.getName());
+  public static Log getLog(Class<?> aClass) {
+    return getLog(aClass.getName());
   }
 
   public static Log getLog(String logger) {
@@ -67,10 +67,6 @@ public final class LogFactory {
     setImplementation(org.apache.ibatis.logging.commons.JakartaCommonsLoggingImpl.class);
   }
 
-  /**
-   * @deprecated Since 3.5.9 - See https://github.com/mybatis/mybatis-3/issues/1223. This method will remove future.
-   */
-  @Deprecated
   public static synchronized void useLog4JLogging() {
     setImplementation(org.apache.ibatis.logging.log4j.Log4jImpl.class);
   }
@@ -91,6 +87,11 @@ public final class LogFactory {
     setImplementation(org.apache.ibatis.logging.nologging.NoLoggingImpl.class);
   }
 
+
+  /**
+   * 尝试实现一个日志实例
+   * @param runnable 用来尝试实现日志实例的操作
+   */
   private static void tryImplementation(Runnable runnable) {
     if (logConstructor == null) {
       try {
@@ -101,13 +102,20 @@ public final class LogFactory {
     }
   }
 
+  /**
+   * 设置日志实现
+   * @param implClass 日志实现类
+   */
   private static void setImplementation(Class<? extends Log> implClass) {
     try {
+      // 当前日志实现类的构造方法
       Constructor<? extends Log> candidate = implClass.getConstructor(String.class);
+      // 尝试生成日志实现类的实例
       Log log = candidate.newInstance(LogFactory.class.getName());
       if (log.isDebugEnabled()) {
         log.debug("Logging initialized using '" + implClass + "' adapter.");
       }
+      // 如果运行到这里，说明没有异常发生。则实例化日志实现类成功。
       logConstructor = candidate;
     } catch (Throwable t) {
       throw new LogException("Error setting Log implementation.  Cause: " + t, t);

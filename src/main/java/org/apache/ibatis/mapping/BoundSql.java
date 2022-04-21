@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -32,13 +32,20 @@ import org.apache.ibatis.session.Configuration;
  * Can also have additional parameters that are created by the dynamic language (for loops, bind...).
  *
  * @author Clinton Begin
+ *
+ * 绑定的SQL,是从SqlSource而来，将动态内容都处理完成得到的SQL语句字符串，其中包括?,还有绑定的参数
  */
 public class BoundSql {
 
+  // 可能含有“?”占位符的sql语句
   private final String sql;
+  // 参数映射列表
   private final List<ParameterMapping> parameterMappings;
+  // 实参对象本身
   private final Object parameterObject;
+  // 实参
   private final Map<String, Object> additionalParameters;
+  // additionalParameters的包装对象
   private final MetaObject metaParameters;
 
   public BoundSql(Configuration configuration, String sql, List<ParameterMapping> parameterMappings, Object parameterObject) {

@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2017 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -19,11 +19,24 @@ import java.util.Iterator;
 
 /**
  * @author Clinton Begin
+ * 属性标记器
+ */
+
+/**
+ * 假设传入的为student[sId].name
+ * 则各个属性得到以下结果
+ *
+ * 该属性标记器只能处理一级，即点后面的都作为children
  */
 public class PropertyTokenizer implements Iterator<PropertyTokenizer> {
+
+  // student
   private String name;
+  // student[sId]
   private final String indexedName;
+  // sId
   private String index;
+  // name
   private final String children;
 
   public PropertyTokenizer(String fullname) {

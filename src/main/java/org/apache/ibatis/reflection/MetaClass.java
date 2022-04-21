@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -31,7 +31,9 @@ import org.apache.ibatis.reflection.property.PropertyTokenizer;
  */
 public class MetaClass {
 
+  // 反射器工厂
   private final ReflectorFactory reflectorFactory;
+  // 反射器
   private final Reflector reflector;
 
   private MetaClass(Class<?> type, ReflectorFactory reflectorFactory) {
@@ -116,18 +118,17 @@ public class MetaClass {
     try {
       Invoker invoker = reflector.getGetInvoker(propertyName);
       if (invoker instanceof MethodInvoker) {
-        Field declaredMethod = MethodInvoker.class.getDeclaredField("method");
-        declaredMethod.setAccessible(true);
-        Method method = (Method) declaredMethod.get(invoker);
+        Field _method = MethodInvoker.class.getDeclaredField("method");
+        _method.setAccessible(true);
+        Method method = (Method) _method.get(invoker);
         return TypeParameterResolver.resolveReturnType(method, reflector.getType());
       } else if (invoker instanceof GetFieldInvoker) {
-        Field declaredField = GetFieldInvoker.class.getDeclaredField("field");
-        declaredField.setAccessible(true);
-        Field field = (Field) declaredField.get(invoker);
+        Field _field = GetFieldInvoker.class.getDeclaredField("field");
+        _field.setAccessible(true);
+        Field field = (Field) _field.get(invoker);
         return TypeParameterResolver.resolveFieldType(field, reflector.getType());
       }
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      // Ignored
+    } catch (NoSuchFieldException | IllegalAccessException ignored) {
     }
     return null;
   }

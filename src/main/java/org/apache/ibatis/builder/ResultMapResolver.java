@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2017 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -25,12 +25,19 @@ import org.apache.ibatis.mapping.ResultMapping;
  * @author Eduardo Macarron
  */
 public class ResultMapResolver {
+  // Mapper建造者辅助类
   private final MapperBuilderAssistant assistant;
+  // ResultMap的id
   private final String id;
+  // ResultMap的type属性，即目标对象类型
   private final Class<?> type;
+  // ResultMap的extends属性，即继承属性
   private final String extend;
+  // ResultMap中的Discriminator节点，即鉴别器
   private final Discriminator discriminator;
+  // ResultMap中的属性映射列表
   private final List<ResultMapping> resultMappings;
+  // ResultMap的autoMapping属性，即是否开启自动映射
   private final Boolean autoMapping;
 
   public ResultMapResolver(MapperBuilderAssistant assistant, String id, Class<?> type, String extend, Discriminator discriminator, List<ResultMapping> resultMappings, Boolean autoMapping) {

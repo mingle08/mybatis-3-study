@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.apache.ibatis.reflection.ReflectionException;
 
 /**
  * @author Clinton Begin
+ * 属性（包括属性方法）名称处理器
  */
 public final class PropertyNamer {
 
@@ -28,6 +29,7 @@ public final class PropertyNamer {
     // Prevent Instantiation of Static Class
   }
 
+  // 将方法名转化为属性名
   public static String methodToProperty(String name) {
     if (name.startsWith("is")) {
       name = name.substring(2);
@@ -37,6 +39,7 @@ public final class PropertyNamer {
       throw new ReflectionException("Error parsing property name '" + name + "'.  Didn't start with 'is', 'get' or 'set'.");
     }
 
+    // 将方法名中属性的大小写修改正确
     if (name.length() == 1 || (name.length() > 1 && !Character.isUpperCase(name.charAt(1)))) {
       name = name.substring(0, 1).toLowerCase(Locale.ENGLISH) + name.substring(1);
     }
@@ -44,6 +47,7 @@ public final class PropertyNamer {
     return name;
   }
 
+  // 判断方法是不是getter或者setter
   public static boolean isProperty(String name) {
     return isGetter(name) || isSetter(name);
   }

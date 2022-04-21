@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -34,10 +34,11 @@ import org.apache.ibatis.session.RowBounds;
  */
 public class RoutingStatementHandler implements StatementHandler {
 
+  // 根据语句类型选取出的被代理类的对象
   private final StatementHandler delegate;
 
   public RoutingStatementHandler(Executor executor, MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
-
+    // 根据语句类型选择被代理对象
     switch (ms.getStatementType()) {
       case STATEMENT:
         delegate = new SimpleStatementHandler(executor, ms, parameter, rowBounds, resultHandler, boundSql);
@@ -51,7 +52,6 @@ public class RoutingStatementHandler implements StatementHandler {
       default:
         throw new ExecutorException("Unknown statement type: " + ms.getStatementType());
     }
-
   }
 
   @Override

@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2015 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -19,5 +19,8 @@ package org.apache.ibatis.session;
  * @author Clinton Begin
  */
 public enum ExecutorType {
-  SIMPLE, REUSE, BATCH
+
+  SIMPLE, // 为每个语句创建新的预处理语句
+  REUSE,  // 复用
+  BATCH   // 执行批量操作
 }

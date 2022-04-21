@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -98,10 +98,22 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 主要内容分为以下几个部分：
+ * 1、大量的配置项，和与`<configuration>`标签中的配置对应
+ * 2、创建类型别名注册机，并向内注册了大量的类型别名
+ * 3、创建了大量Map，包括存储映射语句的Map，存储缓存的Map等，这些Map使用的是一种不允许覆盖的严格Map
+ * 4、给出了大量的处理器的创建方法，包括参数处理器、语句处理器、结果处理器、执行器。
+ *    注意这里并没有真正创建，只是给出了方法。
+ */
+
 public class Configuration {
 
+  // <environment>节点的信息
   protected Environment environment;
 
+  // 以下为<settings>节点中的配置信息
   protected boolean safeRowBoundsEnabled;
   protected boolean safeResultHandlerEnabled = true;
   protected boolean mapUnderscoreToCamelCase;
@@ -113,13 +125,10 @@ public class Configuration {
   protected boolean callSettersOnNulls;
   protected boolean useActualParamName = true;
   protected boolean returnInstanceForEmptyRow;
-  protected boolean shrinkWhitespacesInSql;
-  protected boolean nullableOnForEach;
 
   protected String logPrefix;
   protected Class<? extends Log> logImpl;
   protected Class<? extends VFS> vfsImpl;
-  protected Class<?> defaultSqlProviderType;
   protected LocalCacheScope localCacheScope = LocalCacheScope.SESSION;
   protected JdbcType jdbcTypeForNull = JdbcType.OTHER;
   protected Set<String> lazyLoadTriggerMethods = new HashSet<>(Arrays.asList("equals", "clone", "hashCode", "toString"));
@@ -129,51 +138,58 @@ public class Configuration {
   protected ExecutorType defaultExecutorType = ExecutorType.SIMPLE;
   protected AutoMappingBehavior autoMappingBehavior = AutoMappingBehavior.PARTIAL;
   protected AutoMappingUnknownColumnBehavior autoMappingUnknownColumnBehavior = AutoMappingUnknownColumnBehavior.NONE;
+  // 以上为<settings>节点中的配置信息
 
+  // <properties>节点信息
   protected Properties variables = new Properties();
+  // 反射工厂
   protected ReflectorFactory reflectorFactory = new DefaultReflectorFactory();
+  // 对象工厂
   protected ObjectFactory objectFactory = new DefaultObjectFactory();
+  // 对象包装工厂
   protected ObjectWrapperFactory objectWrapperFactory = new DefaultObjectWrapperFactory();
-
+  // 是否启用懒加载，该配置来自<settings>节点
   protected boolean lazyLoadingEnabled = false;
+  // 代理工厂
   protected ProxyFactory proxyFactory = new JavassistProxyFactory(); // #224 Using internal Javassist instead of OGNL
-
+  // 数据库编号
   protected String databaseId;
-  /**
-   * Configuration factory class.
-   * Used to create Configuration for loading deserialized unread properties.
-   *
-   * @see <a href='https://github.com/mybatis/old-google-code-issues/issues/300'>Issue 300 (google code)</a>
-   */
+  // 配置工厂，用来创建用于加载反序列化的未读属性的配置。
   protected Class<?> configurationFactory;
-
+  // 映射注册表
   protected final MapperRegistry mapperRegistry = new MapperRegistry(this);
+  // 拦截器链（用来支持插件的插入）
   protected final InterceptorChain interceptorChain = new InterceptorChain();
-  protected final TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry(this);
+  // 类型处理器注册表，内置许多，可以通过<typeHandlers>节点补充
+  protected final TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry();
+  // 类型别名注册表，内置许多，可以通过<typeAliases>节点补充
   protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
+  // 语言驱动注册表
   protected final LanguageDriverRegistry languageRegistry = new LanguageDriverRegistry();
-
+  // 映射的数据库操作语句
   protected final Map<String, MappedStatement> mappedStatements = new StrictMap<MappedStatement>("Mapped Statements collection")
       .conflictMessageProducer((savedValue, targetValue) ->
           ". please check " + savedValue.getResource() + " and " + targetValue.getResource());
+  // 缓存
   protected final Map<String, Cache> caches = new StrictMap<>("Caches collection");
+  // 结果映射，即所有的<resultMap>节点
   protected final Map<String, ResultMap> resultMaps = new StrictMap<>("Result Maps collection");
+  // 参数映射，即所有的<parameterMap>节点
   protected final Map<String, ParameterMap> parameterMaps = new StrictMap<>("Parameter Maps collection");
+  // 主键生成器映射
   protected final Map<String, KeyGenerator> keyGenerators = new StrictMap<>("Key Generators collection");
-
+  // 载入的资源，例如映射文件资源
   protected final Set<String> loadedResources = new HashSet<>();
+  // SQL语句片段，即所有的<sql>节点
   protected final Map<String, XNode> sqlFragments = new StrictMap<>("XML fragments parsed from previous mappers");
 
+  // 暂存未处理完成的一些节点
   protected final Collection<XMLStatementBuilder> incompleteStatements = new LinkedList<>();
   protected final Collection<CacheRefResolver> incompleteCacheRefs = new LinkedList<>();
   protected final Collection<ResultMapResolver> incompleteResultMaps = new LinkedList<>();
   protected final Collection<MethodResolver> incompleteMethods = new LinkedList<>();
 
-  /*
-   * A map holds cache-ref relationship. The key is the namespace that
-   * references a cache bound to another namespace and the value is the
-   * namespace which the actual cache is bound to.
-   */
+  // 用来存储跨namespace的缓存共享设置
   protected final Map<String, String> cacheRefMap = new HashMap<>();
 
   public Configuration(Environment environment) {
@@ -245,27 +261,6 @@ public class Configuration {
     }
   }
 
-  /**
-   * Gets an applying type when omit a type on sql provider annotation(e.g. {@link org.apache.ibatis.annotations.SelectProvider}).
-   *
-   * @return the default type for sql provider annotation
-   * @since 3.5.6
-   */
-  public Class<?> getDefaultSqlProviderType() {
-    return defaultSqlProviderType;
-  }
-
-  /**
-   * Sets an applying type when omit a type on sql provider annotation(e.g. {@link org.apache.ibatis.annotations.SelectProvider}).
-   *
-   * @param defaultSqlProviderType
-   *          the default type for sql provider annotation
-   * @since 3.5.6
-   */
-  public void setDefaultSqlProviderType(Class<?> defaultSqlProviderType) {
-    this.defaultSqlProviderType = defaultSqlProviderType;
-  }
-
   public boolean isCallSettersOnNulls() {
     return callSettersOnNulls;
   }
@@ -288,36 +283,6 @@ public class Configuration {
 
   public void setReturnInstanceForEmptyRow(boolean returnEmptyInstance) {
     this.returnInstanceForEmptyRow = returnEmptyInstance;
-  }
-
-  public boolean isShrinkWhitespacesInSql() {
-    return shrinkWhitespacesInSql;
-  }
-
-  public void setShrinkWhitespacesInSql(boolean shrinkWhitespacesInSql) {
-    this.shrinkWhitespacesInSql = shrinkWhitespacesInSql;
-  }
-
-  /**
-   * Sets the default value of 'nullable' attribute on 'foreach' tag.
-   *
-   * @param nullableOnForEach If nullable, set to {@code true}
-   * @since 3.5.9
-   */
-  public void setNullableOnForEach(boolean nullableOnForEach) {
-    this.nullableOnForEach = nullableOnForEach;
-  }
-
-  /**
-   * Returns the default value of 'nullable' attribute on 'foreach' tag.
-   *
-   * <p>Default is {@code false}.
-   *
-   * @return If nullable, set to {@code true}
-   * @since 3.5.9
-   */
-  public boolean isNullableOnForEach() {
-    return nullableOnForEach;
   }
 
   public String getDatabaseId() {
@@ -385,9 +350,6 @@ public class Configuration {
   }
 
   /**
-   * Gets the auto mapping unknown column behavior.
-   *
-   * @return the auto mapping unknown column behavior
    * @since 3.4.0
    */
   public AutoMappingUnknownColumnBehavior getAutoMappingUnknownColumnBehavior() {
@@ -395,10 +357,6 @@ public class Configuration {
   }
 
   /**
-   * Sets the auto mapping unknown column behavior.
-   *
-   * @param autoMappingUnknownColumnBehavior
-   *          the new auto mapping unknown column behavior
    * @since 3.4.0
    */
   public void setAutoMappingUnknownColumnBehavior(AutoMappingUnknownColumnBehavior autoMappingUnknownColumnBehavior) {
@@ -481,9 +439,6 @@ public class Configuration {
   }
 
   /**
-   * Gets the default fetch size.
-   *
-   * @return the default fetch size
    * @since 3.3.0
    */
   public Integer getDefaultFetchSize() {
@@ -491,20 +446,13 @@ public class Configuration {
   }
 
   /**
-   * Sets the default fetch size.
-   *
-   * @param defaultFetchSize
-   *          the new default fetch size
    * @since 3.3.0
    */
   public void setDefaultFetchSize(Integer defaultFetchSize) {
     this.defaultFetchSize = defaultFetchSize;
   }
 
-  /**
-   * Gets the default result set type.
-   *
-   * @return the default result set type
+    /**
    * @since 3.5.2
    */
   public ResultSetType getDefaultResultSetType() {
@@ -512,10 +460,6 @@ public class Configuration {
   }
 
   /**
-   * Sets the default result set type.
-   *
-   * @param defaultResultSetType
-   *          the new default result set type
    * @since 3.5.2
    */
   public void setDefaultResultSetType(ResultSetType defaultResultSetType) {
@@ -575,9 +519,6 @@ public class Configuration {
   }
 
   /**
-   * Gets the mapper registry.
-   *
-   * @return the mapper registry
    * @since 3.2.2
    */
   public MapperRegistry getMapperRegistry() {
@@ -609,9 +550,6 @@ public class Configuration {
   }
 
   /**
-   * Gets the interceptors.
-   *
-   * @return the interceptors
    * @since 3.2.2
    */
   public List<Interceptor> getInterceptors() {
@@ -634,11 +572,6 @@ public class Configuration {
   }
 
   /**
-   * Gets the language driver.
-   *
-   * @param langClass
-   *          the lang class
-   * @return the language driver
    * @since 3.5.1
    */
   public LanguageDriver getLanguageDriver(Class<? extends LanguageDriver> langClass) {
@@ -650,9 +583,6 @@ public class Configuration {
   }
 
   /**
-   * Gets the default scripting language instance.
-   *
-   * @return the default scripting language instance
    * @deprecated Use {@link #getDefaultScriptingLanguageInstance()}
    */
   @Deprecated
@@ -664,9 +594,19 @@ public class Configuration {
     return MetaObject.forObject(object, objectFactory, objectWrapperFactory, reflectorFactory);
   }
 
+  /**
+   * 创建参数处理器
+   * @param mappedStatement SQL操作的信息
+   * @param parameterObject 参数对象
+   * @param boundSql SQL语句信息
+   * @return 参数处理器
+   */
   public ParameterHandler newParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {
+    // 创建参数处理器
     ParameterHandler parameterHandler = mappedStatement.getLang().createParameterHandler(mappedStatement, parameterObject, boundSql);
+    // 将参数处理器交给拦截器链进行替换，以便拦截器链中的拦截器能注入行为
     parameterHandler = (ParameterHandler) interceptorChain.pluginAll(parameterHandler);
+    // 返回最终的参数处理器
     return parameterHandler;
   }
 
@@ -687,10 +627,17 @@ public class Configuration {
     return newExecutor(transaction, defaultExecutorType);
   }
 
+  /**
+   * 创建一个执行器
+   * @param transaction 事务
+   * @param executorType 数据库操作类型
+   * @return 执行器
+   */
   public Executor newExecutor(Transaction transaction, ExecutorType executorType) {
     executorType = executorType == null ? defaultExecutorType : executorType;
     executorType = executorType == null ? ExecutorType.SIMPLE : executorType;
     Executor executor;
+    // 根据数据操作类型创建实际执行器
     if (ExecutorType.BATCH == executorType) {
       executor = new BatchExecutor(this, transaction);
     } else if (ExecutorType.REUSE == executorType) {
@@ -698,9 +645,12 @@ public class Configuration {
     } else {
       executor = new SimpleExecutor(this, transaction);
     }
-    if (cacheEnabled) {
+    // 根据配置文件中settings节点cacheEnabled配置项确定是否启用缓存
+    if (cacheEnabled) { // 如果配置启用缓存
+      // 使用CachingExecutor装饰实际执行器
       executor = new CachingExecutor(executor);
     }
+    // 为执行器增加拦截器（插件），以启用各个拦截器的功能
     executor = (Executor) interceptorChain.pluginAll(executor);
     return executor;
   }
@@ -948,7 +898,6 @@ public class Configuration {
    * Extracts namespace from fully qualified statement id.
    *
    * @param statementId
-   *          the statement id
    * @return namespace or null when id does not contain period.
    */
   protected String extractNamespace(String statementId) {
@@ -990,6 +939,13 @@ public class Configuration {
     }
   }
 
+  /*
+   * 该类继承了HashMap，有以下几个特点：
+   * 1、不允许覆盖，如果写入的key已经存在，则会直接报错
+   * 2、如果写入的key中包含“.”，例如“com.github.yeecode.clazzName”，
+   *    则会分别以“clazzName”和“com.github.yeecode.clazzName”为key，将value存入两次。
+   */
+
   protected static class StrictMap<V> extends HashMap<String, V> {
 
     private static final long serialVersionUID = -4950446264854982944L;
@@ -1029,21 +985,32 @@ public class Configuration {
       return this;
     }
 
+    /**
+     * 向Map中写入键值对
+     * @param key 键
+     * @param value 值
+     * @return 旧值，如果不存在旧值则为null。因为StrictMap不允许覆盖，则只能返回null
+     */
     @Override
     @SuppressWarnings("unchecked")
     public V put(String key, V value) {
       if (containsKey(key)) {
+        //如果已经存在此key了，直接报错
         throw new IllegalArgumentException(name + " already contains value for " + key
             + (conflictMessageProducer == null ? "" : conflictMessageProducer.apply(super.get(key), value)));
       }
       if (key.contains(".")) {
+        // 例如key=“com.github.yeecode.clazzName”，则shortName = “clazzName”，即获取一个短名称
         final String shortKey = getShortName(key);
         if (super.get(shortKey) == null) {
+          // 以短名称为键，放置一次
           super.put(shortKey, value);
         } else {
+          // 放入该对象，表示短名称会引发歧义
           super.put(shortKey, (V) new Ambiguity(shortKey));
         }
       }
+      // 以长名称为键，放置一次
       return super.put(key, value);
     }
 
@@ -1060,8 +1027,12 @@ public class Configuration {
       return value;
     }
 
+    // 含糊，是说短名称指代不明，引发歧义
+    // 因此，只要拿到该类型的value，说明：
+    // 1，用户一定使用了shortName进行了查询
+    // 2, 这个shortName存在重名
     protected static class Ambiguity {
-      private final String subject;
+      final private String subject;
 
       public Ambiguity(String subject) {
         this.subject = subject;

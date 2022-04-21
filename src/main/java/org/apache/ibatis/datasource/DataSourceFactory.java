@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2015 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.apache.ibatis.datasource;
 
 import java.util.Properties;
-
 import javax.sql.DataSource;
 
 /**
@@ -24,8 +23,16 @@ import javax.sql.DataSource;
  */
 public interface DataSourceFactory {
 
+  /**
+   * 设置工厂属性
+   * @param props 属性
+   */
   void setProperties(Properties props);
 
-  DataSource getDataSource();
 
+  /**
+   * 从工厂中获取产品
+   * @return DataSource对象
+   */
+  DataSource getDataSource();
 }

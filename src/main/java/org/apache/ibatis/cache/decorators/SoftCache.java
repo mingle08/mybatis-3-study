@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2022 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -29,9 +29,13 @@ import org.apache.ibatis.cache.Cache;
  * @author Clinton Begin
  */
 public class SoftCache implements Cache {
+  // 强引用的对象列表
   private final Deque<Object> hardLinksToAvoidGarbageCollection;
+  // 软引用的对象列表
   private final ReferenceQueue<Object> queueOfGarbageCollectedEntries;
+  // 被装饰对象
   private final Cache delegate;
+  // 强引用对象的数目限制
   private int numberOfHardLinks;
 
   public SoftCache(Cache delegate) {
@@ -51,6 +55,7 @@ public class SoftCache implements Cache {
     removeGarbageCollectedItems();
     return delegate.getSize();
   }
+
 
   public void setSize(int size) {
     this.numberOfHardLinks = size;
@@ -87,9 +92,7 @@ public class SoftCache implements Cache {
   @Override
   public Object removeObject(Object key) {
     removeGarbageCollectedItems();
-    @SuppressWarnings("unchecked")
-    SoftReference<Object> softReference = (SoftReference<Object>) delegate.removeObject(key);
-    return softReference == null ? null : softReference.get();
+    return delegate.removeObject(key);
   }
 
   @Override

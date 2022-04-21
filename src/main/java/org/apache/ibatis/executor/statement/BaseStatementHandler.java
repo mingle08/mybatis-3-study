@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2016 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -36,6 +36,10 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 主要定义了从Connection中获取Statement的方法，而对于具体的Statement操作则未定义
+ */
 public abstract class BaseStatementHandler implements StatementHandler {
 
   protected final Configuration configuration;
@@ -60,7 +64,9 @@ public abstract class BaseStatementHandler implements StatementHandler {
     this.objectFactory = configuration.getObjectFactory();
 
     if (boundSql == null) { // issue #435, get the key before calculating the statement
+      // 如果是前置主键自增，则在这里进行获得自增的键值
       generateKeys(parameterObject);
+      // 获取BoundSql对象
       boundSql = mappedStatement.getBoundSql(parameterObject);
     }
 
@@ -80,6 +86,7 @@ public abstract class BaseStatementHandler implements StatementHandler {
     return parameterHandler;
   }
 
+  // 从连接中获取一个Statement，并设置事务超时时间
   @Override
   public Statement prepare(Connection connection, Integer transactionTimeout) throws SQLException {
     ErrorContext.instance().sql(boundSql.getSql());
@@ -98,8 +105,10 @@ public abstract class BaseStatementHandler implements StatementHandler {
     }
   }
 
+  // 从Connection中实例化Statement
   protected abstract Statement instantiateStatement(Connection connection) throws SQLException;
 
+  // 设置查询超时时间
   protected void setStatementTimeout(Statement stmt, Integer transactionTimeout) throws SQLException {
     Integer queryTimeout = null;
     if (mappedStatement.getTimeout() != null) {
@@ -113,6 +122,7 @@ public abstract class BaseStatementHandler implements StatementHandler {
     StatementUtil.applyTransactionTimeout(stmt, queryTimeout, transactionTimeout);
   }
 
+  // 获取数据大小限制
   protected void setFetchSize(Statement stmt) throws SQLException {
     Integer fetchSize = mappedStatement.getFetchSize();
     if (fetchSize != null) {
@@ -135,6 +145,7 @@ public abstract class BaseStatementHandler implements StatementHandler {
     }
   }
 
+  // 前置自增主键的生成
   protected void generateKeys(Object parameter) {
     KeyGenerator keyGenerator = mappedStatement.getKeyGenerator();
     ErrorContext.instance().store();

@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.apache.ibatis.reflection.Reflector;
  * @author Clinton Begin
  */
 public class SetFieldInvoker implements Invoker {
+  // 要操作的属性
   private final Field field;
 
   public SetFieldInvoker(Field field) {
@@ -32,6 +33,7 @@ public class SetFieldInvoker implements Invoker {
   @Override
   public Object invoke(Object target, Object[] args) throws IllegalAccessException {
     try {
+      // 直接给属性赋值就可以
       field.set(target, args[0]);
     } catch (IllegalAccessException e) {
       if (Reflector.canControlMemberAccessible()) {

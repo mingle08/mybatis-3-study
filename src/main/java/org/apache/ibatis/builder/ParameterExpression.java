@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -30,6 +30,9 @@ import java.util.HashMap;
  * </pre>
  *
  * @author Frank D. Martinez [mnesarco]
+ *
+ * 一个属性解析器
+ * 能够将属性拆解开来
  */
 public class ParameterExpression extends HashMap<String, String> {
 
@@ -39,11 +42,15 @@ public class ParameterExpression extends HashMap<String, String> {
     parse(expression);
   }
 
+  // content = id, javaType= int, jdbcType=NUMERIC, typeHandler=DemoTypeHandler ;
   private void parse(String expression) {
+    // 跳过空格
     int p = skipWS(expression, 0);
+    // 跳过左括号
     if (expression.charAt(p) == '(') {
       expression(expression, p + 1);
     } else {
+      // 处理参数
       property(expression, p);
     }
   }
@@ -60,13 +67,20 @@ public class ParameterExpression extends HashMap<String, String> {
       right++;
     }
     put("expression", expression.substring(left, right - 1));
+    // 截止这里，取出了一小段  a=b
+
+    // 处理这一小段
     jdbcTypeOpt(expression, right);
   }
 
   private void property(String expression, int left) {
     if (left < expression.length()) {
+      // 找到右边界，通过，或者：
       int right = skipUntil(expression, left, ",:");
+      // 右边界前面的放入map，key为固定值property。即property = id
+      // 因此这里处理的第一个参数前面必须没有等号
       put("property", trimmedStr(expression, left, right));
+      //剩下的 javaType= int, jdbcType=NUMERIC, typeHandler=DemoTypeHandler继续处理
       jdbcTypeOpt(expression, right);
     }
   }

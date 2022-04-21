@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2015 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.apache.ibatis.mapping.MappedStatement;
 /**
  * @author Clinton Begin
  */
+// 用于实现数据插入时主键自增的主键编号生成器
 public interface KeyGenerator {
 
   void processBefore(Executor executor, MappedStatement ms, Statement stmt, Object parameter);

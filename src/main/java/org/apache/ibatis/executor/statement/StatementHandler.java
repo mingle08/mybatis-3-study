@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2016 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -30,26 +30,34 @@ import org.apache.ibatis.session.ResultHandler;
  */
 public interface StatementHandler {
 
+  // 从Connection中创建一个Statement
   Statement prepare(Connection connection, Integer transactionTimeout)
       throws SQLException;
 
+  // 为Statement绑定实参
   void parameterize(Statement statement)
       throws SQLException;
 
+  // 批量执行操作
   void batch(Statement statement)
       throws SQLException;
 
+  // 执行增、删、改操作
   int update(Statement statement)
       throws SQLException;
 
+  // 执行查找操作，返回list
   <E> List<E> query(Statement statement, ResultHandler resultHandler)
       throws SQLException;
 
+  // 执行查询操作，返回迭代游标
   <E> Cursor<E> queryCursor(Statement statement)
       throws SQLException;
 
+  // 获取BoundSql对象
   BoundSql getBoundSql();
 
+  // 获取参数处理器
   ParameterHandler getParameterHandler();
 
 }

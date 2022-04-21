@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -31,6 +31,13 @@ public class IntegerTypeHandler extends BaseTypeHandler<Integer> {
     ps.setInt(i, parameter);
   }
 
+  /**
+   * 从结果集中读出一个可能为null的结果
+   * @param rs 结果集
+   * @param columnName 要读取结果的列名称
+   * @return 结果值
+   * @throws SQLException
+   */
   @Override
   public Integer getNullableResult(ResultSet rs, String columnName)
       throws SQLException {

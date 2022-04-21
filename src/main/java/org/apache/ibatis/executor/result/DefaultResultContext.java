@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2015 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -21,9 +21,11 @@ import org.apache.ibatis.session.ResultContext;
  * @author Clinton Begin
  */
 public class DefaultResultContext<T> implements ResultContext<T> {
-
+  // 结果对象
   private T resultObject;
+  // 结果计数（表明这是第几个结果对象）
   private int resultCount;
+  // 使用完毕（结果已经被取走）
   private boolean stopped;
 
   public DefaultResultContext() {

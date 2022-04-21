@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2017 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -27,17 +27,22 @@ import org.apache.ibatis.reflection.property.PropertyTokenizer;
  */
 public abstract class BaseWrapper implements ObjectWrapper {
 
+  // 获取对象属性时，没有参数传入时，就传入它
   protected static final Object[] NO_ARGUMENTS = new Object[0];
+
+  // 被包装对象的元对象
   protected final MetaObject metaObject;
 
   protected BaseWrapper(MetaObject metaObject) {
     this.metaObject = metaObject;
   }
 
+
   protected Object resolveCollection(PropertyTokenizer prop, Object object) {
     if ("".equals(prop.getName())) {
       return object;
     } else {
+      // 这里会循环调用，解析下层
       return metaObject.getValue(prop.getName());
     }
   }

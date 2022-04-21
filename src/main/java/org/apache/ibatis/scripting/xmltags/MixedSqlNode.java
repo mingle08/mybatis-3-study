@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@ import java.util.List;
 
 /**
  * @author Clinton Begin
+ *
+ * 符合节点，需要将节点内的内容循环加到尾部
+ *
  */
 public class MixedSqlNode implements SqlNode {
   private final List<SqlNode> contents;

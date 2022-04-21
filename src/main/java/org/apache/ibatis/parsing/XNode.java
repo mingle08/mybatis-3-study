@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Supplier;
 
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Element;
@@ -32,11 +31,17 @@ import org.w3c.dom.NodeList;
  */
 public class XNode {
 
+  // org.w3c.dom.Node 表示是xml中的一个节点
   private final Node node;
+  // 节点名
   private final String name;
+  // 节点体
   private final String body;
+  // 节点的属性
   private final Properties attributes;
+  //  MyBatis配置文件中的properties信息
   private final Properties variables;
+  // XML解析器XPathParser
   private final XPathParser xpathParser;
 
   public XNode(XPathParser xpathParser, Node node, Properties variables) {
@@ -83,7 +88,7 @@ public class XNode {
       }
       String value = current.getStringAttribute("id",
           current.getStringAttribute("value",
-              current.getStringAttribute("property", (String) null)));
+              current.getStringAttribute("property", null)));
       if (value != null) {
         value = value.replace('.', '_');
         builder.insert(0, "]");
@@ -130,7 +135,11 @@ public class XNode {
   }
 
   public String getStringBody(String def) {
-    return body == null ? def : body;
+    if (body == null) {
+      return def;
+    } else {
+      return body;
+    }
   }
 
   public Boolean getBooleanBody() {
@@ -138,7 +147,11 @@ public class XNode {
   }
 
   public Boolean getBooleanBody(Boolean def) {
-    return body == null ? def : Boolean.valueOf(body);
+    if (body == null) {
+      return def;
+    } else {
+      return Boolean.valueOf(body);
+    }
   }
 
   public Integer getIntBody() {
@@ -146,7 +159,11 @@ public class XNode {
   }
 
   public Integer getIntBody(Integer def) {
-    return body == null ? def : Integer.valueOf(body);
+    if (body == null) {
+      return def;
+    } else {
+      return Integer.parseInt(body);
+    }
   }
 
   public Long getLongBody() {
@@ -154,7 +171,11 @@ public class XNode {
   }
 
   public Long getLongBody(Long def) {
-    return body == null ? def : Long.valueOf(body);
+    if (body == null) {
+      return def;
+    } else {
+      return Long.parseLong(body);
+    }
   }
 
   public Double getDoubleBody() {
@@ -162,7 +183,11 @@ public class XNode {
   }
 
   public Double getDoubleBody(Double def) {
-    return body == null ? def : Double.valueOf(body);
+    if (body == null) {
+      return def;
+    } else {
+      return Double.parseDouble(body);
+    }
   }
 
   public Float getFloatBody() {
@@ -170,7 +195,11 @@ public class XNode {
   }
 
   public Float getFloatBody(Float def) {
-    return body == null ? def : Float.valueOf(body);
+    if (body == null) {
+      return def;
+    } else {
+      return Float.parseFloat(body);
+    }
   }
 
   public <T extends Enum<T>> T getEnumAttribute(Class<T> enumType, String name) {
@@ -179,34 +208,24 @@ public class XNode {
 
   public <T extends Enum<T>> T getEnumAttribute(Class<T> enumType, String name, T def) {
     String value = getStringAttribute(name);
-    return value == null ? def : Enum.valueOf(enumType,value);
-  }
-
-  /**
-   * Return a attribute value as String.
-   *
-   * <p>
-   * If attribute value is absent, return value that provided from supplier of default value.
-   *
-   * @param name
-   *          attribute name
-   * @param defSupplier
-   *          a supplier of default value
-   * @return the string attribute
-   * @since 3.5.4
-   */
-  public String getStringAttribute(String name, Supplier<String> defSupplier) {
-    String value = attributes.getProperty(name);
-    return value == null ? defSupplier.get() : value;
+    if (value == null) {
+      return def;
+    } else {
+      return Enum.valueOf(enumType, value);
+    }
   }
 
   public String getStringAttribute(String name) {
-    return getStringAttribute(name, (String) null);
+    return getStringAttribute(name, null);
   }
 
   public String getStringAttribute(String name, String def) {
     String value = attributes.getProperty(name);
-    return value == null ? def : value;
+    if (value == null) {
+      return def;
+    } else {
+      return value;
+    }
   }
 
   public Boolean getBooleanAttribute(String name) {
@@ -215,7 +234,11 @@ public class XNode {
 
   public Boolean getBooleanAttribute(String name, Boolean def) {
     String value = attributes.getProperty(name);
-    return value == null ? def : Boolean.valueOf(value);
+    if (value == null) {
+      return def;
+    } else {
+      return Boolean.valueOf(value);
+    }
   }
 
   public Integer getIntAttribute(String name) {
@@ -224,7 +247,11 @@ public class XNode {
 
   public Integer getIntAttribute(String name, Integer def) {
     String value = attributes.getProperty(name);
-    return value == null ? def : Integer.valueOf(value);
+    if (value == null) {
+      return def;
+    } else {
+      return Integer.parseInt(value);
+    }
   }
 
   public Long getLongAttribute(String name) {
@@ -233,7 +260,11 @@ public class XNode {
 
   public Long getLongAttribute(String name, Long def) {
     String value = attributes.getProperty(name);
-    return value == null ? def : Long.valueOf(value);
+    if (value == null) {
+      return def;
+    } else {
+      return Long.parseLong(value);
+    }
   }
 
   public Double getDoubleAttribute(String name) {
@@ -242,7 +273,11 @@ public class XNode {
 
   public Double getDoubleAttribute(String name, Double def) {
     String value = attributes.getProperty(name);
-    return value == null ? def : Double.valueOf(value);
+    if (value == null) {
+      return def;
+    } else {
+      return Double.parseDouble(value);
+    }
   }
 
   public Float getFloatAttribute(String name) {
@@ -251,7 +286,11 @@ public class XNode {
 
   public Float getFloatAttribute(String name, Float def) {
     String value = attributes.getProperty(name);
-    return value == null ? def : Float.valueOf(value);
+    if (value == null) {
+      return def;
+    } else {
+      return Float.parseFloat(value);
+    }
   }
 
   public List<XNode> getChildren() {
@@ -283,11 +322,6 @@ public class XNode {
   @Override
   public String toString() {
     StringBuilder builder = new StringBuilder();
-    toString(builder, 0);
-    return builder.toString();
-  }
-
-  private void toString(StringBuilder builder, int level) {
     builder.append("<");
     builder.append(name);
     for (Map.Entry<Object, Object> entry : attributes.entrySet()) {
@@ -300,11 +334,9 @@ public class XNode {
     List<XNode> children = getChildren();
     if (!children.isEmpty()) {
       builder.append(">\n");
-      for (XNode child : children) {
-        indent(builder, level + 1);
-        child.toString(builder, level + 1);
+      for (XNode node : children) {
+        builder.append(node.toString());
       }
-      indent(builder, level);
       builder.append("</");
       builder.append(name);
       builder.append(">");
@@ -316,15 +348,9 @@ public class XNode {
       builder.append(">");
     } else {
       builder.append("/>");
-      indent(builder, level);
     }
     builder.append("\n");
-  }
-
-  private void indent(StringBuilder builder, int level) {
-    for (int i = 0; i < level; i++) {
-      builder.append("    ");
-    }
+    return builder.toString();
   }
 
   private Properties parseAttributes(Node n) {

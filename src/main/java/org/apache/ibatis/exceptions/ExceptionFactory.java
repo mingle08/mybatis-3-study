@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2015 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -22,10 +22,19 @@ import org.apache.ibatis.executor.ErrorContext;
  */
 public class ExceptionFactory {
 
+  // 不允许实例化该类
   private ExceptionFactory() {
     // Prevent Instantiation
   }
 
+  // 静态方法，直接调用
+
+  /**
+   * 生成一个RuntimeException异常
+   * @param message 异常信息
+   * @param e 异常
+   * @return 新的RuntimeException异常
+   */
   public static RuntimeException wrapException(String message, Exception e) {
     return new PersistenceException(ErrorContext.instance().message(message).cause(e).toString(), e);
   }

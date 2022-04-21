@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -90,9 +90,16 @@ public class CallableStatementHandler extends BaseStatementHandler {
     }
   }
 
+  /**
+   * 对语句进行参数处理
+   * @param statement SQL语句
+   * @throws SQLException
+   */
   @Override
   public void parameterize(Statement statement) throws SQLException {
+    // 输出参数的注册
     registerOutputParameters((CallableStatement) statement);
+    // 输入参数的处理
     parameterHandler.setParameters((CallableStatement) statement);
   }
 

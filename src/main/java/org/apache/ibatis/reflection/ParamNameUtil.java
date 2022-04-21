@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// 提供获取普通方法或者构造方法的参数名称列表的工具方法。
 public class ParamNameUtil {
   public static List<String> getParamNames(Method method) {
     return getParameterNames(method);
@@ -32,6 +33,7 @@ public class ParamNameUtil {
     return getParameterNames(constructor);
   }
 
+  // 获取方法（Executable的子类包含构造方法和一般方法）的参数列表
   private static List<String> getParameterNames(Executable executable) {
     return Arrays.stream(executable.getParameters()).map(Parameter::getName).collect(Collectors.toList());
   }

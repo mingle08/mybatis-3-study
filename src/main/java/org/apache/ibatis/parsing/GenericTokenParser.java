@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,11 +17,17 @@ package org.apache.ibatis.parsing;
 
 /**
  * @author Clinton Begin
+ *
+ * 占位符处理器
+ *
  */
 public class GenericTokenParser {
 
+  // 占位符的起始标志
   private final String openToken;
+  // 占位符的结束标志
   private final String closeToken;
+  // 占位符处理器
   private final TokenHandler handler;
 
   public GenericTokenParser(String openToken, String closeToken, TokenHandler handler) {
@@ -30,6 +36,18 @@ public class GenericTokenParser {
     this.handler = handler;
   }
 
+  /**
+   *
+   * @param text 输入：
+   *             SELECT * FROM t_action
+   *          WHERE `id`=#{id}
+   *         ORDER BY `actionTime`
+   *
+   * @return 输出：
+   *          SELECT * FROM t_action
+   *          WHERE `id`=?
+   *         ORDER BY `actionTime`
+   */
   public String parse(String text) {
     if (text == null || text.isEmpty()) {
       return "";
@@ -43,7 +61,7 @@ public class GenericTokenParser {
     int offset = 0;
     final StringBuilder builder = new StringBuilder();
     StringBuilder expression = null;
-    do {
+    while (start > -1) {
       if (start > 0 && src[start - 1] == '\\') {
         // this open token is escaped. remove the backslash and continue.
         builder.append(src, offset, start - offset - 1).append(openToken);
@@ -74,12 +92,13 @@ public class GenericTokenParser {
           builder.append(src, start, src.length - start);
           offset = src.length;
         } else {
+          // 这里调用了传入的handler的方法
           builder.append(handler.handleToken(expression.toString()));
           offset = end + closeToken.length();
         }
       }
       start = text.indexOf(openToken, offset);
-    } while (start > -1);
+    }
     if (offset < src.length) {
       builder.append(src, offset, src.length - offset);
     }

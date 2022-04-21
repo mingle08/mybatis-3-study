@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.apache.ibatis.transaction.jdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-
 import javax.sql.DataSource;
 
 import org.apache.ibatis.logging.Log;
@@ -36,13 +35,18 @@ import org.apache.ibatis.transaction.TransactionException;
  *
  * @see JdbcTransactionFactory
  */
+// 由JDBC进行事务管理
 public class JdbcTransaction implements Transaction {
 
   private static final Log log = LogFactory.getLog(JdbcTransaction.class);
 
+  // 数据库连接
   protected Connection connection;
+  // 数据源
   protected DataSource dataSource;
+  // 事务隔离级别
   protected TransactionIsolationLevel level;
+  // 是否自动提交事务
   protected boolean autoCommit;
 
   public JdbcTransaction(DataSource ds, TransactionIsolationLevel desiredLevel, boolean desiredAutoCommit) {
@@ -63,16 +67,26 @@ public class JdbcTransaction implements Transaction {
     return connection;
   }
 
+  /**
+   * 提交事务
+   * @throws SQLException
+   */
   @Override
   public void commit() throws SQLException {
+    // 连接存在且不会自动提交事务
     if (connection != null && !connection.getAutoCommit()) {
       if (log.isDebugEnabled()) {
         log.debug("Committing JDBC Connection [" + connection + "]");
       }
+      // 调用connection对象的方法提交事务
       connection.commit();
     }
   }
 
+  /**
+   * 回滚事务
+   * @throws SQLException
+   */
   @Override
   public void rollback() throws SQLException {
     if (connection != null && !connection.getAutoCommit()) {

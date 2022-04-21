@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -44,10 +44,6 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
   protected Configuration configuration;
 
   /**
-   * Sets the configuration.
-   *
-   * @param c
-   *          the new configuration
    * @deprecated Since 3.5.0 - See https://github.com/mybatis/mybatis-3/issues/1203. This property will remove future.
    */
   @Deprecated
@@ -79,6 +75,13 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
     }
   }
 
+  /**
+   * 从结果集中读出一个结果
+   * @param rs 结果集
+   * @param columnName 要读取的结果的列名称
+   * @return 结果值
+   * @throws SQLException
+   */
   @Override
   public T getResult(ResultSet rs, String columnName) throws SQLException {
     try {
@@ -109,15 +112,7 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
   public abstract void setNonNullParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException;
 
   /**
-   * Gets the nullable result.
-   *
-   * @param rs
-   *          the rs
-   * @param columnName
-   *          Column name, when configuration <code>useColumnLabel</code> is <code>false</code>
-   * @return the nullable result
-   * @throws SQLException
-   *           the SQL exception
+   * @param columnName Colunm name, when configuration <code>useColumnLabel</code> is <code>false</code>
    */
   public abstract T getNullableResult(ResultSet rs, String columnName) throws SQLException;
 

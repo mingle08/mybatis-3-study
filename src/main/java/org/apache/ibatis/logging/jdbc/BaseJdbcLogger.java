@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -26,9 +26,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
-import org.apache.ibatis.builder.SqlSourceBuilder;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.reflection.ArrayUtil;
 
@@ -37,18 +37,24 @@ import org.apache.ibatis.reflection.ArrayUtil;
  *
  * @author Clinton Begin
  * @author Eduardo Macarron
+ *
+ * 该包能够代理打印JDBC日志
  */
 public abstract class BaseJdbcLogger {
 
+  // 记录了PreparedStatement中的setter
   protected static final Set<String> SET_METHODS;
+  // 里面记录了执行SQL操作的方法名，这些方法名是固定的，因此是常量
   protected static final Set<String> EXECUTE_METHODS = new HashSet<>();
-
+  // PreparedStatement中的setter方法中的key：value，即属性和值
   private final Map<Object, Object> columnMap = new HashMap<>();
-
+  // PreparedStatement中的setter方法中的key
   private final List<Object> columnNames = new ArrayList<>();
+  // PreparedStatement中的setter方法中的value
   private final List<Object> columnValues = new ArrayList<>();
-
+  // 选取的Log实现
   protected final Log statementLog;
+  // SQL操作的嵌套层数
   protected final int queryStack;
 
   /*
@@ -120,8 +126,14 @@ public abstract class BaseJdbcLogger {
     columnValues.clear();
   }
 
-  protected String removeExtraWhitespace(String original) {
-    return SqlSourceBuilder.removeExtraWhitespaces(original);
+  protected String removeBreakingWhitespace(String original) {
+    StringTokenizer whitespaceStripper = new StringTokenizer(original);
+    StringBuilder builder = new StringBuilder();
+    while (whitespaceStripper.hasMoreTokens()) {
+      builder.append(whitespaceStripper.nextToken());
+      builder.append(" ");
+    }
+    return builder.toString();
   }
 
   protected boolean isDebugEnabled() {

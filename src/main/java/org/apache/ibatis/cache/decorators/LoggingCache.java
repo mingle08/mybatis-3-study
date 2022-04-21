@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -49,11 +49,18 @@ public class LoggingCache implements Cache {
     delegate.putObject(key, object);
   }
 
+  /**
+   * 从缓存中读取一条信息
+   * @param key 信息的键
+   * @return 信息的值
+   */
   @Override
   public Object getObject(Object key) {
+    // 请求缓存次数+1
     requests++;
     final Object value = delegate.getObject(key);
-    if (value != null) {
+    if (value != null) { // 命中缓存
+      // 命中缓存次数+1
       hits++;
     }
     if (log.isDebugEnabled()) {

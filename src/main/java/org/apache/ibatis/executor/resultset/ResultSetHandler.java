@@ -1,5 +1,5 @@
-/*
- *    Copyright 2009-2021 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -27,10 +27,13 @@ import org.apache.ibatis.cursor.Cursor;
  */
 public interface ResultSetHandler {
 
+  // 将Statement的执行结果处理为List
   <E> List<E> handleResultSets(Statement stmt) throws SQLException;
 
+  // 将Statement的执行结果处理为Map
   <E> Cursor<E> handleCursorResultSets(Statement stmt) throws SQLException;
 
+  // 处理存储过程的输出结果
   void handleOutputParameters(CallableStatement cs) throws SQLException;
 
 }
