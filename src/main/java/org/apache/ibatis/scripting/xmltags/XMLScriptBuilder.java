@@ -74,7 +74,7 @@ public class XMLScriptBuilder extends BaseBuilder {
    * @return SqlSource对象
    */
   public SqlSource parseScriptNode() {
-    // 解析XML节点节点，得到节点树MixedSqlNode
+    // 解析XML节点，得到节点树MixedSqlNode
     MixedSqlNode rootSqlNode = parseDynamicTags(context);
     SqlSource sqlSource;
     // 根据节点树是否为动态，创建对应的SqlSource对象
