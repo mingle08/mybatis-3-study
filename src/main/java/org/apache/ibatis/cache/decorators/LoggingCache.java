@@ -59,7 +59,8 @@ public class LoggingCache implements Cache {
     // 请求缓存次数+1
     requests++;
     final Object value = delegate.getObject(key);
-    if (value != null) { // 命中缓存
+    // 命中缓存
+    if (value != null) {
       // 命中缓存次数+1
       hits++;
     }

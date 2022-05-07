@@ -28,6 +28,7 @@ public class PerpetualCache implements Cache {
 
   // Cache的id，一般为所在的namespace
   private final String id;
+
   // 用来存储要缓存的信息
   private Map<Object, Object> cache = new HashMap<>();
 

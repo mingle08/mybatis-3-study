@@ -58,6 +58,7 @@ public class LruCache implements Cache {
    * @param size 缓存空间大小
    */
   public void setSize(final int size) {
+    // 使用的是LinkedHashMap
     keyMap = new LinkedHashMap<Object, Object>(size, .75F, true) {
       private static final long serialVersionUID = 4267176411845948333L;
 

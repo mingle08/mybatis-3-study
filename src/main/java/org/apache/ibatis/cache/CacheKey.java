@@ -36,10 +36,13 @@ public class CacheKey implements Cloneable, Serializable {
 
   // 乘数，用来计算hashcode时使用
   private final int multiplier;
+
   // 哈希值，整个CacheKey的哈希值。如果两个CacheKey该值不同，则两个CacheKey一定不同
   private int hashcode;
+
   // 求和校验值，整个CacheKey的求和校验值。如果两个CacheKey该值不同，则两个CacheKey一定不同
   private long checksum;
+
   // 更新次数，整个CacheKey的更新次数
   private int count;
   // 更新历史
